@@ -1,0 +1,23 @@
+name: Deploy Appointment Backend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 66.116.196.82
+          username: nodeteam
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /home/nodeteam/appointment/appointment
+            git pull origin main
+            npm install
+            pm2 restart appointment-api

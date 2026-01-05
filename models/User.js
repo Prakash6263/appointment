@@ -45,15 +45,6 @@ const userSchema = new mongoose.Schema(
       sparse: true,
     },
 
-    firstName: {
-      type: String,
-      sparse: true,
-    },
-    lastName: {
-      type: String,
-      sparse: true,
-    },
-
     // OTP / verification
     otp: String,
     otpExpires: Date,

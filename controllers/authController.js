@@ -8,8 +8,7 @@ const path = require("path")
 // Signup Controller
 exports.signup = async (req, res) => {
   try {
-    const { email, username, phoneNumber, password, role, firstName, lastName, businessName, businessCategory } =
-      req.body
+    const { email, username, phoneNumber, password, role } = req.body
 
     // Check if user already exists
     let user = await User.findOne({ $or: [{ email }, { username }] })
@@ -36,20 +35,12 @@ exports.signup = async (req, res) => {
       isEmailVerified: false,
     }
 
-    if (role === "customer") {
-      userData.firstName = firstName
-      userData.lastName = lastName
-    } else if (role === "provider") {
-      userData.businessName = businessName
-      userData.businessCategory = businessCategory
-    }
-
     // Create user
     user = new User(userData)
     await user.save()
 
     // Send OTP email
-    const displayName = role === "customer" ? firstName : businessName
+    const displayName = username || email
     await sendOTPEmail(email, otp, displayName)
 
     res.status(201).json({
@@ -147,7 +138,7 @@ exports.resendOTP = async (req, res) => {
     await user.save()
 
     // Send OTP email
-    const displayName = user.role === "customer" ? user.firstName : user.businessName
+    const displayName = user.username || user.email
     await sendOTPEmail(email, otp, displayName)
 
     res.json({
@@ -241,7 +232,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save()
 
     // Send password reset email
-    const displayName = user.role === "customer" ? user.firstName : user.businessName
+    const displayName = user.username || user.email
     await sendPasswordResetEmail(email, otp, displayName)
 
     res.json({
@@ -351,7 +342,7 @@ exports.resetPassword = async (req, res) => {
 exports.editProfile = async (req, res) => {
   try {
     const { userId } = req.params
-    const { firstName, lastName, contact, address, email } = req.body
+    const { contact, address, email } = req.body
 
     // Find user
     const user = await User.findById(userId)
@@ -389,12 +380,6 @@ exports.editProfile = async (req, res) => {
       user.profileImage = `/uploads/${req.file.filename}`
     }
 
-    // Update role-specific fields
-    if (user.role === "customer") {
-      if (firstName) user.firstName = firstName
-      if (lastName) user.lastName = lastName
-    }
-
     await user.save()
 
     res.json({
@@ -415,7 +400,7 @@ exports.editProfile = async (req, res) => {
 
 exports.googleCallback = async (req, res) => {
   try {
-    const { googleId, email, firstName, lastName, role } = req.body
+    const { googleId, email, role } = req.body
 
     // Check if user exists
     let user = await User.findOne({ $or: [{ googleId }, { email }] })
@@ -443,11 +428,6 @@ exports.googleCallback = async (req, res) => {
         role,
         isEmailVerified: true,
       })
-
-      if (role === "customer") {
-        user.firstName = firstName
-        user.lastName = lastName
-      }
 
       await user.save()
     }

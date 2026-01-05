@@ -66,8 +66,8 @@ const resetPasswordValidation = [
 const editProfileValidation = [
   body("firstName").optional().notEmpty().withMessage("First name cannot be empty"),
   body("lastName").optional().notEmpty().withMessage("Last name cannot be empty"),
-  body("businessName").optional().notEmpty().withMessage("Business name cannot be empty"),
-  body("businessCategory").optional().notEmpty().withMessage("Business category cannot be empty"),
+  // body("businessName").optional().notEmpty().withMessage("Business name cannot be empty"),
+  // body("businessCategory").optional().notEmpty().withMessage("Business category cannot be empty"),
   body("contact").optional().notEmpty().withMessage("Contact cannot be empty"),
   body("address").optional().notEmpty().withMessage("Address cannot be empty"),
   body("email").optional().isEmail().normalizeEmail().withMessage("Invalid email"),

@@ -25,14 +25,14 @@ const signupValidation = [
   body("role").isIn(["customer", "provider"]).withMessage("Role must be customer or provider"),
   body("firstName").if(body("role").equals("customer")).notEmpty().withMessage("First name is required for customers"),
   body("lastName").if(body("role").equals("customer")).notEmpty().withMessage("Last name is required for customers"),
-  body("businessName")
-    .if(body("role").equals("provider"))
-    .notEmpty()
-    .withMessage("Business name is required for providers"),
-  body("businessCategory")
-    .if(body("role").equals("provider"))
-    .notEmpty()
-    .withMessage("Business category is required for providers"),
+  // body("businessName")
+  //   .if(body("role").equals("provider"))
+  //   .notEmpty()
+  //   .withMessage("Business name is required for providers"),
+  // body("businessCategory")
+  //   .if(body("role").equals("provider"))
+  //   .notEmpty()
+  //   .withMessage("Business category is required for providers"),
 ]
 
 // OTP verification validation

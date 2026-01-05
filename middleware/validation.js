@@ -34,6 +34,7 @@ const resendOTPValidation = [body("email").isEmail().withMessage("Invalid email 
 const loginValidation = [
   body("email").isEmail().withMessage("Invalid email address"),
   body("password").notEmpty().withMessage("Password is required"),
+  body("role").isIn(["customer", "provider"]).withMessage("Invalid role"),
 ]
 
 const forgotPasswordValidation = [body("email").isEmail().withMessage("Invalid email address")]

@@ -75,36 +75,29 @@ exports.verifyOTP = async (req, res) => {
       })
     }
 
-    // ✅ Allow default OTP (master OTP)
-    const MASTER_OTP = "999999"
-
-    // ❌ If OTP is not master OTP, then do normal checks
-    if (otp !== MASTER_OTP) {
-
-      // Check if OTP exists & expired
-      if (!user.otp || !user.otpExpires || new Date() > user.otpExpires) {
-        return res.status(400).json({
-          success: false,
-          message: "OTP expired. Please request a new one",
-        })
-      }
-
-      // Verify OTP
-      if (user.otp !== otp) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid OTP",
-        })
-      }
+    // Check if OTP is expired
+    if (!user.otpExpires || new Date() > user.otpExpires) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired. Please request a new one",
+      })
     }
 
-    // ✅ Mark email as verified
+    // Verify OTP
+    if (user.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      })
+    }
+
+    // Mark email as verified and clear OTP
     user.isEmailVerified = true
     user.otp = null
     user.otpExpires = null
     await user.save()
 
-    return res.json({
+    res.json({
       success: true,
       message: "Email verified successfully",
       data: {
@@ -113,16 +106,14 @@ exports.verifyOTP = async (req, res) => {
         role: user.role,
       },
     })
-
   } catch (error) {
     console.error("OTP verification error:", error)
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "OTP verification failed",
     })
   }
 }
-
 
 // Resend OTP Controller
 exports.resendOTP = async (req, res) => {
@@ -169,14 +160,14 @@ exports.resendOTP = async (req, res) => {
 // Login Controller
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body
+    const { email, password, role } = req.body
 
     // Find user
-    const user = await User.findOne({ email }).select("+password")
+    const user = await User.findOne({ email, role }).select("+password")
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials",
+        message: "Invalid credentials for this login type",
       })
     }
 

@@ -1,5 +1,5 @@
 const generateOTP = () => {
-  return "999999"
+  return "9999"
 }
 
 // Get OTP expiration time (10 minutes from now)

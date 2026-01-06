@@ -16,7 +16,7 @@ const handleValidationErrors = (req, res, next) => {
 const signupValidation = [
   body("email").isEmail().withMessage("Invalid email address"),
   body("username").notEmpty().withMessage("Username is required"),
-  body("phoneNumber").notEmpty().withMessage("Phone number is required"),
+  // body("phoneNumber").notEmpty().withMessage("Phone number is required"),
   body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
   body("role").isIn(["customer", "provider"]).withMessage("Invalid role"),
 ]

@@ -1,8 +1,9 @@
 const nodemailer = require("nodemailer")
 
-// Create transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.GMAIL_EMAIL,
     pass: process.env.GMAIL_APP_PASSWORD,
@@ -12,7 +13,7 @@ const transporter = nodemailer.createTransport({
 // Send OTP email
 const sendOTPEmail = async (email, otp, userName) => {
   const mailOptions = {
-    from: process.env.GMAIL_EMAIL,
+    from: `"Appointment App" <${process.env.GMAIL_EMAIL}>`,
     to: email,
     subject: "Email Verification - Your OTP Code",
     html: `
@@ -42,7 +43,7 @@ const sendOTPEmail = async (email, otp, userName) => {
 
 const sendPasswordResetEmail = async (email, otp, userName) => {
   const mailOptions = {
-    from: process.env.GMAIL_EMAIL,
+    from: `"Appointment App" <${process.env.GMAIL_EMAIL}>`,
     to: email,
     subject: "Password Reset - Your OTP Code",
     html: `

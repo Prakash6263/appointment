@@ -1,4 +1,5 @@
 const User = require("../models/User")
+const ProviderAvailability = require("../models/ProviderAvailability")
 const { sendOTPEmail, sendPasswordResetEmail } = require("../services/emailService")
 const { generateOTP, getOTPExpiration } = require("../utils/otpUtils")
 const jwt = require("jsonwebtoken")
@@ -38,6 +39,24 @@ exports.signup = async (req, res) => {
     // Create user
     user = new User(userData)
     await user.save()
+
+    if (role === "provider") {
+      const defaultSchedule = [
+        { day: "Monday", enabled: false, start: "00:00", end: "00:00" },
+        { day: "Tuesday", enabled: false, start: "00:00", end: "00:00" },
+        { day: "Wednesday", enabled: false, start: "00:00", end: "00:00" },
+        { day: "Thursday", enabled: false, start: "00:00", end: "00:00" },
+        { day: "Friday", enabled: false, start: "00:00", end: "00:00" },
+        { day: "Saturday", enabled: false, start: "00:00", end: "00:00" },
+        { day: "Sunday", enabled: false, start: "00:00", end: "00:00" },
+      ]
+
+      await ProviderAvailability.create({
+        providerId: user._id,
+        isOnlineAvailable: false,
+        weeklySchedule: defaultSchedule,
+      })
+    }
 
     // Send OTP email
     const displayName = username || email

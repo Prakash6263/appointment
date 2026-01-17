@@ -6,6 +6,7 @@ const adminRoutes = require("./admin.routes")
 const partnerRoutes = require("./partner.routes")
 const providerRoutes = require("./provider.routes")
 const notificationRoutes = require("./notifications")
+const availabilityRoutes = require("./availability")
 
 const router = express.Router()
 
@@ -16,5 +17,6 @@ router.use("/admin", adminRoutes)
 router.use("/partners", partnerRoutes)
 router.use("/providers", providerRoutes)
 router.use("/notifications", notificationRoutes)
+router.use("/availability", availabilityRoutes)
 
 module.exports = router

@@ -62,15 +62,14 @@ exports.registerPartner = async (req, res) => {
 
     // Generate verification token
     const verificationToken = generateEmailVerificationToken(partner._id, partner.email)
-    const verificationLink = `${process.env.FRONTEND_URL || "http://localhost:3000"}/partner/verify/${verificationToken}`
 
     // Update partner with token
     partner.emailVerificationToken = verificationToken
     partner.emailVerificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
     await partner.save()
 
-    // Send verification email
-    await sendPartnerVerificationEmail(partner.email, partner.companyName, verificationLink)
+    // Send verification email with token (email utility will generate link from BACKEND_BASE_URL)
+    await sendPartnerVerificationEmail(partner.email, partner.companyName, partner.ownerName, verificationToken)
 
     res.status(201).json({
       success: true,

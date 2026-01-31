@@ -84,8 +84,8 @@ exports.approvePartner = async (req, res) => {
     partner.createdBy = req.userId
     await partner.save()
 
-    // Send approval email
-    await sendPartnerApprovalEmail(partner.email, partner.companyName)
+    // Send approval email with owner name
+    await sendPartnerApprovalEmail(partner.email, partner.companyName, partner.ownerName)
 
     res.json({
       success: true,

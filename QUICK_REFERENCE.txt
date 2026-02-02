@@ -1,0 +1,237 @@
+================================================================================
+LOCATION APIS - QUICK REFERENCE
+================================================================================
+
+INSTALLATION:
+  npm install
+  npm run dev
+
+API BASE URL:
+  http://localhost:5000/api/location
+
+================================================================================
+ENDPOINTS SUMMARY:
+================================================================================
+
+1. GET /countries
+   Returns: Array of all countries
+   Cache: 24h | Rate: 100/15min
+
+2. POST /states
+   Body: { "country": "India" }
+   Returns: Array of states
+   Cache: 24h | Rate: 100/15min
+
+3. POST /cities
+   Body: { "country": "India", "state": "Delhi" }
+   Returns: Array of cities
+   Cache: 24h | Rate: 100/15min
+
+4. GET /geocode?city=Delhi&country=India
+   Returns: { latitude, longitude, displayName, boundingbox }
+   Cache: 24h | Rate: 100/15min
+
+5. GET /nearby-places?lat=28.6139&lng=77.209&type=restaurant
+   Returns: { placeType, latitude, longitude, results: [...] }
+   Cache: 24h | Rate: 100/15min
+
+6. GET /reverse-geocode?lat=28.6139&lng=77.209
+   Returns: { latitude, longitude, address, displayName }
+   Cache: 24h | Rate: 100/15min
+
+================================================================================
+PARTNER LOCATION FIELDS:
+================================================================================
+
+New fields in Partner schema:
+  country: String
+  state: String
+  city: String
+  gstNumber: String
+  websiteName: String
+
+Update partner endpoint:
+  PUT /api/partners
+  Body: { "country": "India", "state": "Delhi", "city": "Delhi", ... }
+
+================================================================================
+FILES CREATED:
+================================================================================
+
+NEW:
+  /cache/cache.js - Caching utility
+  /services/countriesService.js - CountriesNow API
+  /services/geocodeService.js - Nominatim API
+  /middleware/rateLimiter.js - Rate limiting
+  /controllers/locationController.js - Request handlers
+  /routes/locationRoutes.js - Express routes
+  /postman_collection.json - Updated
+  /env.sample - .env template
+  /TEST_PAYLOADS.txt - Test examples
+  /LOCATION_API_SETUP.txt - Detailed setup
+  /QUICK_REFERENCE.txt - This file
+
+MODIFIED:
+  /models/Partner.js - Added location fields
+  /controllers/partnerController.js - Updated to handle location
+  /routes/index.js - Registered location routes
+  /package.json - Added dependencies
+
+================================================================================
+PACKAGE.JSON UPDATES:
+================================================================================
+
+Added dependencies:
+  "axios": "^1.6.0"
+  "express-rate-limit": "^7.1.5"
+  "node-cache": "^5.1.2"
+
+================================================================================
+EXTERNAL APIS (FREE):
+================================================================================
+
+1. CountriesNow
+   - Countries/States/Cities data
+   - No auth required
+   - Unlimited
+
+2. OpenStreetMap Nominatim
+   - Geocoding & reverse geocoding
+   - No auth required
+   - Max 1 req/sec (we cache)
+
+================================================================================
+TESTING IN POSTMAN:
+================================================================================
+
+Import: postman_collection.json
+Variable: {{baseUrl}} = http://localhost:5000
+
+Test order:
+1. Get Countries
+2. Get States → use country from #1
+3. Get Cities → use state from #2
+4. Geocode Location → get coordinates
+5. Nearby Places → use coordinates from #4
+6. Reverse Geocode → use coordinates from #4
+7. Update Partner → add location fields
+
+================================================================================
+ERROR RESPONSES:
+================================================================================
+
+400: Missing required parameters
+  "message": "Country name is required"
+
+429: Rate limit exceeded
+  "message": "Too many requests from this IP, please try again later."
+
+500: External API error
+  "message": "Failed to fetch countries"
+
+================================================================================
+CACHING:
+================================================================================
+
+All endpoints cache responses for 24 hours.
+Cache keys are auto-generated from parameters.
+Restart server to clear cache immediately.
+
+Cache hits are instant (< 50ms)
+First request takes 2-5 seconds
+
+================================================================================
+RATE LIMITING:
+================================================================================
+
+Limit: 100 requests per 15 minutes per IP
+Response: 429 Too Many Requests
+Headers: RateLimit-Limit, RateLimit-Remaining, RateLimit-Reset
+
+================================================================================
+COORDINATES VALIDATION:
+================================================================================
+
+Latitude (lat): -90 to 90
+Longitude (lng): -180 to 180
+
+Invalid coordinates return 400 error.
+
+================================================================================
+EXAMPLE CURL COMMANDS:
+================================================================================
+
+# Get Countries
+curl http://localhost:5000/api/location/countries
+
+# Get States
+curl -X POST http://localhost:5000/api/location/states \
+  -H "Content-Type: application/json" \
+  -d '{"country":"India"}'
+
+# Get Cities
+curl -X POST http://localhost:5000/api/location/cities \
+  -H "Content-Type: application/json" \
+  -d '{"country":"India","state":"Delhi"}'
+
+# Geocode
+curl "http://localhost:5000/api/location/geocode?city=Delhi&country=India"
+
+# Nearby Places
+curl "http://localhost:5000/api/location/nearby-places?lat=28.6139&lng=77.209&type=restaurant"
+
+# Reverse Geocode
+curl "http://localhost:5000/api/location/reverse-geocode?lat=28.6139&lng=77.209"
+
+# Update Partner (requires auth token)
+curl -X PUT http://localhost:5000/api/partners \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"country":"India","state":"Delhi","city":"Delhi"}'
+
+================================================================================
+TROUBLESHOOTING CHECKLIST:
+================================================================================
+
+[ ] npm install ran successfully
+[ ] All new files created in correct folders
+[ ] Server starts with "Server running on port 5000"
+[ ] Location routes respond with 200 status
+[ ] Rate limiter middleware applied
+[ ] Caching working (check logs)
+[ ] Partner schema has location fields
+[ ] Partner controller accepts location fields
+[ ] Postman collection imported
+[ ] Tests passing in Postman
+[ ] No CORS issues
+[ ] External APIs accessible (test with curl)
+
+================================================================================
+NEXT: PRODUCTION DEPLOYMENT
+================================================================================
+
+Before going live:
+1. Change NODE_ENV=production in .env
+2. Test with production database
+3. Configure monitoring & logging
+4. Increase rate limit if needed
+5. Set up health checks
+6. Configure HTTPS/SSL
+7. Set up backups
+8. Deploy to production server
+
+================================================================================
+SUPPORT:
+================================================================================
+
+For detailed information:
+  - See LOCATION_API_SETUP.txt for complete documentation
+  - See TEST_PAYLOADS.txt for all test examples
+  - Review source files in /services and /controllers
+  - Check Postman collection for request examples
+
+External API Status:
+  - CountriesNow: https://countriesnow.space
+  - Nominatim: https://nominatim.openstreetmap.org
+
+================================================================================

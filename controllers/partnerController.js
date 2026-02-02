@@ -96,7 +96,7 @@ exports.getPartner = async (req, res) => {
 exports.updatePartner = async (req, res) => {
   try {
     const { userId } = req
-    const { businessName } = req.body
+    const { businessName, country, state, city, gstNumber, websiteName } = req.body
 
     const partner = await Partner.findOne({ ownerUserId: userId })
     if (!partner) {
@@ -107,6 +107,11 @@ exports.updatePartner = async (req, res) => {
     }
 
     if (businessName) partner.businessName = businessName
+    if (country) partner.country = country
+    if (state) partner.state = state
+    if (city) partner.city = city
+    if (gstNumber) partner.gstNumber = gstNumber
+    if (websiteName) partner.websiteName = websiteName
 
     await partner.save()
 

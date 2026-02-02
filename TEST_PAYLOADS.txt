@@ -1,0 +1,340 @@
+================================================================================
+LOCATION APIS - TEST PAYLOADS & EXAMPLES
+================================================================================
+
+BASE URL: http://localhost:5000/api/location
+
+================================================================================
+1. GET COUNTRIES
+================================================================================
+URL: GET /countries
+Description: Fetch all countries with 24-hour caching
+
+CURL:
+curl -X GET "http://localhost:5000/api/location/countries"
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "message": "Countries fetched successfully",
+  "data": ["Afghanistan", "Albania", "Algeria", "Andorra", ...],
+  "count": 193
+}
+
+================================================================================
+2. GET STATES
+================================================================================
+URL: POST /states
+Description: Fetch states for a country. Cached per country.
+
+PAYLOAD:
+{
+  "country": "India"
+}
+
+CURL:
+curl -X POST "http://localhost:5000/api/location/states" \
+  -H "Content-Type: application/json" \
+  -d '{"country": "India"}'
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "message": "States for India fetched successfully",
+  "data": [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Delhi",
+    "Goa",
+    ...
+  ],
+  "count": 36
+}
+
+ERROR (500):
+{
+  "success": false,
+  "message": "Invalid response from States API",
+  "data": null
+}
+
+================================================================================
+3. GET CITIES
+================================================================================
+URL: POST /cities
+Description: Fetch cities for country and state. Cached per state.
+
+PAYLOAD:
+{
+  "country": "India",
+  "state": "Delhi"
+}
+
+CURL:
+curl -X POST "http://localhost:5000/api/location/cities" \
+  -H "Content-Type: application/json" \
+  -d '{"country": "India", "state": "Delhi"}'
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "message": "Cities for Delhi, India fetched successfully",
+  "data": ["Delhi"],
+  "count": 1
+}
+
+ERROR (400 - Missing State):
+{
+  "success": false,
+  "message": "Country and state names are required",
+  "data": null
+}
+
+================================================================================
+4. GEOCODE LOCATION (Get Coordinates)
+================================================================================
+URL: GET /geocode?city=Delhi&country=India
+Description: Get latitude and longitude from city/country. Uses OpenStreetMap Nominatim.
+
+CURL:
+curl -X GET "http://localhost:5000/api/location/geocode?city=Delhi&country=India"
+
+QUERY PARAMETERS:
+- city (required): City name
+- country (required): Country name
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "message": "Coordinates for Delhi, India fetched successfully",
+  "data": {
+    "latitude": 28.6139,
+    "longitude": 77.209,
+    "displayName": "Delhi, India",
+    "boundingbox": ["28.4044", "28.8846", "76.8381", "77.391"]
+  }
+}
+
+ERROR (400 - Missing Parameters):
+{
+  "success": false,
+  "message": "City and country query parameters are required",
+  "data": null
+}
+
+ERROR (500 - Location Not Found):
+{
+  "success": false,
+  "message": "Location not found: InvalidCity, InvalidCountry",
+  "data": null
+}
+
+================================================================================
+5. NEARBY PLACES
+================================================================================
+URL: GET /nearby-places?lat=28.6139&lng=77.209&type=restaurant
+Description: Find nearby places by type, latitude, longitude.
+
+CURL:
+curl -X GET "http://localhost:5000/api/location/nearby-places?lat=28.6139&lng=77.209&type=restaurant"
+
+QUERY PARAMETERS:
+- lat (required): Latitude
+- lng (required): Longitude
+- type (optional): Place type (default: "restaurant")
+  Examples: restaurant, hospital, hotel, park, museum, school, bank, cafe
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "message": "Nearby restaurants fetched successfully",
+  "data": {
+    "placeType": "restaurant",
+    "latitude": 28.6139,
+    "longitude": 77.209,
+    "results": [
+      {
+        "name": "Restaurant Name",
+        "latitude": 28.615,
+        "longitude": 77.21,
+        "displayName": "Restaurant Name, Delhi",
+        "type": "amenity"
+      },
+      {
+        "name": "Another Restaurant",
+        "latitude": 28.612,
+        "longitude": 77.205,
+        "displayName": "Another Restaurant, Delhi",
+        "type": "amenity"
+      }
+    ]
+  }
+}
+
+ERROR (400 - Missing Coordinates):
+{
+  "success": false,
+  "message": "Latitude (lat) and longitude (lng) query parameters are required",
+  "data": null
+}
+
+ERROR (500 - Invalid Coordinates):
+{
+  "success": false,
+  "message": "Invalid coordinates",
+  "data": null
+}
+
+================================================================================
+6. REVERSE GEOCODE (Get Address from Coordinates)
+================================================================================
+URL: GET /reverse-geocode?lat=28.6139&lng=77.209
+Description: Get address from latitude and longitude.
+
+CURL:
+curl -X GET "http://localhost:5000/api/location/reverse-geocode?lat=28.6139&lng=77.209"
+
+QUERY PARAMETERS:
+- lat (required): Latitude (-90 to 90)
+- lng (required): Longitude (-180 to 180)
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "message": "Address fetched successfully",
+  "data": {
+    "latitude": 28.6139,
+    "longitude": 77.209,
+    "address": {
+      "shop": "Delhi Haat",
+      "road": "Aurobindo Marg",
+      "suburb": "Mehrauli",
+      "city": "Delhi",
+      "state": "Delhi",
+      "country": "India"
+    },
+    "displayName": "Delhi Haat, Aurobindo Marg, Mehrauli, Delhi, Delhi, India"
+  }
+}
+
+================================================================================
+PARTNER WITH LOCATION FIELDS
+================================================================================
+
+CREATE/UPDATE PARTNER PAYLOAD:
+{
+  "businessName": "ABC Services",
+  "country": "India",
+  "state": "Delhi",
+  "city": "Delhi",
+  "gstNumber": "18AABCT1234H1Z0",
+  "websiteName": "www.abcservices.com"
+}
+
+URL: PUT /api/partners (with Authorization header)
+Description: Update partner with location information
+
+CURL:
+curl -X PUT "http://localhost:5000/api/partners" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "businessName": "ABC Services",
+    "country": "India",
+    "state": "Delhi",
+    "city": "Delhi",
+    "gstNumber": "18AABCT1234H1Z0",
+    "websiteName": "www.abcservices.com"
+  }'
+
+RESPONSE (200 OK):
+{
+  "success": true,
+  "message": "Partner updated successfully",
+  "data": {
+    "_id": "64f8a5b3c1d2e3f4g5h6i7j8",
+    "businessName": "ABC Services",
+    "country": "India",
+    "state": "Delhi",
+    "city": "Delhi",
+    "gstNumber": "18AABCT1234H1Z0",
+    "websiteName": "www.abcservices.com",
+    "email": "user@example.com",
+    "phone": "9876543210",
+    "status": "VERIFIED",
+    "isEmailVerified": true,
+    "updatedAt": "2024-02-02T11:45:00Z"
+  }
+}
+
+================================================================================
+RATE LIMITING
+================================================================================
+- All location endpoints are rate-limited to 100 requests per 15 minutes
+- Excess requests will receive: 429 Too Many Requests
+- Rate limit info available in response headers:
+  RateLimit-Limit: 100
+  RateLimit-Remaining: 95
+  RateLimit-Reset: 1612345678
+
+================================================================================
+CACHING STRATEGY
+================================================================================
+- Countries: 24 hours
+- States (per country): 24 hours
+- Cities (per state): 24 hours
+- Geocoded locations (per city/country): 24 hours
+- Nearby places (per lat/lng/type): 24 hours
+- Reverse geocoded addresses (per lat/lng): 24 hours
+
+================================================================================
+EXTERNAL APIS (FREE - NO KEY REQUIRED)
+================================================================================
+
+1. CountriesNow API
+   - Base: https://countriesnow.space/api/v0.1
+   - Endpoints: /countries/positions, /countries/states, /countries/state/cities
+   - No authentication required
+   - Free tier: Unlimited requests
+
+2. OpenStreetMap Nominatim
+   - Base: https://nominatim.openstreetmap.org
+   - Endpoints: /search, /reverse
+   - Usage Policy: Max 1 request per second, must set User-Agent
+   - Free tier: Unlimited requests with User-Agent
+
+================================================================================
+TESTING SEQUENCE IN POSTMAN
+================================================================================
+
+1. Get Countries - Fetch all countries
+2. Get States - Get states for selected country (e.g., "India")
+3. Get Cities - Get cities for selected state (e.g., "Delhi")
+4. Geocode Location - Get coordinates for city
+5. Nearby Places - Find restaurants near coordinates
+6. Reverse Geocode - Get address from coordinates
+7. Update Partner - Add location details to partner profile
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Issue: 404 Not Found on location endpoints
+Solution: Ensure route is registered in /routes/index.js as /api/location
+
+Issue: Rate limit exceeded (429)
+Solution: Wait 15 minutes or cache results on client side
+
+Issue: External API timeout
+Solution: Check internet connection, external API status, and retry
+
+Issue: Coordinate validation error
+Solution: Ensure lat is -90 to 90, lng is -180 to 180
+
+Issue: Cache not updating
+Solution: Cache expires after 24 hours. Restart server to clear manually.
+
+================================================================================

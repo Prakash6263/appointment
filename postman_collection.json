@@ -1,11 +1,328 @@
 {
   "info": {
     "_postman_id": "partner-api-collection",
-    "name": "Partner Backend API",
-    "description": "Complete Partner Backend API Collection with Auth, CRUD, and Admin Functions",
+    "name": "Partner Backend API - Complete",
+    "description": "Complete Partner Backend API Collection with Auth, CRUD, Admin Functions, and FREE Location APIs",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
+    {
+      "name": "0. LOCATION APIs (FREE)",
+      "item": [
+        {
+          "name": "Get All Countries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/location/countries",
+              "protocol": "http",
+              "host": ["{{baseUrl}}"],
+              "port": "5000",
+              "path": ["api", "location", "countries"]
+            },
+            "description": "Fetch list of all countries from CountriesNow API with 24-hour caching"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/countries",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "location", "countries"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Countries fetched successfully\",\n  \"data\": [\"Afghanistan\", \"Albania\", \"Algeria\", ...],\n  \"count\": 193\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get States by Country",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country\": \"India\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/location/states",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "location", "states"]
+            },
+            "description": "Fetch list of states for a given country. Cached per country."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"country\": \"India\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/states",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "location", "states"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"States for India fetched successfully\",\n  \"data\": [\"Andhra Pradesh\", \"Arunachal Pradesh\", \"Assam\", ...],\n  \"count\": 36\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Cities by Country & State",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country\": \"India\",\n  \"state\": \"Delhi\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/location/cities",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "location", "cities"]
+            },
+            "description": "Fetch list of cities for a given country and state. Cached per state."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"country\": \"India\",\n  \"state\": \"Delhi\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/cities",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "location", "cities"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Cities for Delhi, India fetched successfully\",\n  \"data\": [\"Delhi\"],\n  \"count\": 1\n}"
+            }
+          ]
+        },
+        {
+          "name": "Geocode Location (Get Coordinates)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/location/geocode?city=Delhi&country=India",
+              "protocol": "http",
+              "host": ["{{baseUrl}}"],
+              "port": "5000",
+              "path": ["api", "location", "geocode"],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "Delhi"
+                },
+                {
+                  "key": "country",
+                  "value": "India"
+                }
+              ]
+            },
+            "description": "Get latitude and longitude for a city using OpenStreetMap Nominatim API"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/geocode?city=Delhi&country=India",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "location", "geocode"],
+                  "query": [
+                    {
+                      "key": "city",
+                      "value": "Delhi"
+                    },
+                    {
+                      "key": "country",
+                      "value": "India"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Coordinates for Delhi, India fetched successfully\",\n  \"data\": {\n    \"latitude\": 28.6139,\n    \"longitude\": 77.2090,\n    \"displayName\": \"Delhi, India\",\n    \"boundingbox\": [28.4044, 28.8846, 76.8381, 77.3910]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Find Nearby Places",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/location/nearby-places?lat=28.6139&lng=77.2090&type=restaurant",
+              "protocol": "http",
+              "host": ["{{baseUrl}}"],
+              "port": "5000",
+              "path": ["api", "location", "nearby-places"],
+              "query": [
+                {
+                  "key": "lat",
+                  "value": "28.6139"
+                },
+                {
+                  "key": "lng",
+                  "value": "77.2090"
+                },
+                {
+                  "key": "type",
+                  "value": "restaurant"
+                }
+              ]
+            },
+            "description": "Find nearby places by type, latitude, and longitude. Type defaults to 'restaurant' if not provided."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/nearby-places?lat=28.6139&lng=77.2090&type=restaurant",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "location", "nearby-places"],
+                  "query": [
+                    {
+                      "key": "lat",
+                      "value": "28.6139"
+                    },
+                    {
+                      "key": "lng",
+                      "value": "77.2090"
+                    },
+                    {
+                      "key": "type",
+                      "value": "restaurant"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Nearby restaurants fetched successfully\",\n  \"data\": {\n    \"placeType\": \"restaurant\",\n    \"latitude\": 28.6139,\n    \"longitude\": 77.2090,\n    \"results\": [\n      {\n        \"name\": \"Restaurant Name\",\n        \"latitude\": 28.6150,\n        \"longitude\": 77.2100,\n        \"displayName\": \"Restaurant Name, Delhi\",\n        \"type\": \"amenity\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reverse Geocode (Get Address)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/location/reverse-geocode?lat=28.6139&lng=77.2090",
+              "protocol": "http",
+              "host": ["{{baseUrl}}"],
+              "port": "5000",
+              "path": ["api", "location", "reverse-geocode"],
+              "query": [
+                {
+                  "key": "lat",
+                  "value": "28.6139"
+                },
+                {
+                  "key": "lng",
+                  "value": "77.2090"
+                }
+              ]
+            },
+            "description": "Get address from latitude and longitude using OpenStreetMap Nominatim API"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/reverse-geocode?lat=28.6139&lng=77.2090",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "location", "reverse-geocode"],
+                  "query": [
+                    {
+                      "key": "lat",
+                      "value": "28.6139"
+                    },
+                    {
+                      "key": "lng",
+                      "value": "77.2090"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Address fetched successfully\",\n  \"data\": {\n    \"latitude\": 28.6139,\n    \"longitude\": 77.2090,\n    \"address\": {\"city\": \"Delhi\", \"country\": \"India\"},\n    \"displayName\": \"Delhi, India\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
     {
       "name": "1. PARTNER REGISTRATION",
       "item": [
@@ -285,54 +602,60 @@
           "response": []
         },
         {
-          "name": "Update Profile",
+          "name": "Update Profile with Location",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Authorization",
                 "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "companyName",
-                  "value": "Tech Solutions Inc Updated",
-                  "type": "text"
-                },
-                {
-                  "key": "ownerName",
-                  "value": "John Doe Updated",
-                  "type": "text"
-                },
-                {
-                  "key": "phone",
-                  "value": "+9876543210",
-                  "type": "text"
-                },
-                {
-                  "key": "logo",
-                  "description": "Updated company logo (optional)",
-                  "type": "file",
-                  "src": []
-                },
-                {
-                  "key": "profileImage",
-                  "description": "Updated partner profile image (optional)",
-                  "type": "file",
-                  "src": []
-                }
-              ]
+              "mode": "raw",
+              "raw": "{\n  \"businessName\": \"Tech Solutions Inc Updated\",\n  \"country\": \"India\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Mumbai\",\n  \"gstNumber\": \"27AABCT1234H1Z0\",\n  \"websiteName\": \"www.techsolutions-updated.com\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/partner/profile",
+              "raw": "{{baseUrl}}/api/partners",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "partner", "profile"]
-            }
+              "path": ["api", "partners"]
+            },
+            "description": "Update partner details including location (country, state, city), GST number, and website name"
           },
-          "response": []
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer TOKEN"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"country\": \"India\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Mumbai\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/partners",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "partners"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Partner updated successfully\",\n  \"data\": {\n    \"businessName\": \"Tech Solutions Inc Updated\",\n    \"country\": \"India\",\n    \"state\": \"Maharashtra\",\n    \"city\": \"Mumbai\",\n    \"gstNumber\": \"27AABCT1234H1Z0\",\n    \"websiteName\": \"www.techsolutions-updated.com\",\n    \"email\": \"user@example.com\",\n    \"phone\": \"9876543210\"\n  }\n}"
+            }
+          ]
         }
       ]
     },

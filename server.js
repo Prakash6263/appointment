@@ -7,7 +7,7 @@ const routes = require("./routes")
 
 const app = express()
 
-// Middleware
+// Middlewares
 app.use(express.json())
 app.use(cors())
 

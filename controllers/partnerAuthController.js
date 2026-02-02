@@ -15,7 +15,7 @@ const {
 // Register Partner
 exports.registerPartner = async (req, res) => {
   try {
-    const { companyName, ownerName, email, phone, password, confirmPassword } = req.body
+    const { companyName, ownerName, email, phone, password, confirmPassword, country, state, city, gstNumber, websiteName } = req.body
 
     // Validation
     if (!companyName || !ownerName || !email || !phone || !password) {
@@ -61,7 +61,7 @@ exports.registerPartner = async (req, res) => {
       }
     }
 
-    // Create partner
+    // Create partner with location fields
     const partner = new Partner({
       companyName,
       ownerName,
@@ -70,6 +70,11 @@ exports.registerPartner = async (req, res) => {
       password,
       logo,
       profileImage,
+      country: country || null,
+      state: state || null,
+      city: city || null,
+      gstNumber: gstNumber || null,
+      websiteName: websiteName || null,
       status: "PENDING",
     })
 
@@ -94,6 +99,12 @@ exports.registerPartner = async (req, res) => {
         _id: partner._id,
         companyName: partner.companyName,
         email: partner.email,
+        phone: partner.phone,
+        country: partner.country,
+        state: partner.state,
+        city: partner.city,
+        gstNumber: partner.gstNumber,
+        websiteName: partner.websiteName,
         logo: partner.logo,
         profileImage: partner.profileImage,
       },
@@ -246,12 +257,17 @@ exports.getProfile = async (req, res) => {
 // Update Partner Profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { companyName, ownerName, phone } = req.body
+    const { companyName, ownerName, phone, country, state, city, gstNumber, websiteName } = req.body
 
     const updateData = {
       companyName,
       ownerName,
       phone,
+      country,
+      state,
+      city,
+      gstNumber,
+      websiteName,
     }
 
     // Handle file uploads if present

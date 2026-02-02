@@ -13,7 +13,7 @@ app.use(cors())
 
 app.use("/uploads", express.static("uploads"))
 
-// MongoDB Connection
+// MongoDB Connections
 mongoose
   .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,

@@ -115,4 +115,16 @@ router.patch("/admin/partners/:id/approve", verifyToken, requireRole("platform_a
 // Suspend Partner
 router.patch("/admin/partners/:id/suspend", verifyToken, requireRole("platform_admin"), adminPartnerController.suspendPartner)
 
+// Disable Partner
+router.patch("/admin/partners/:id/disable", verifyToken, requireRole("platform_admin"), adminPartnerController.disablePartner)
+
+// Enable Partner
+router.patch("/admin/partners/:id/enable", verifyToken, requireRole("platform_admin"), adminPartnerController.enablePartner)
+
+// Create Partner (Platform Admin)
+router.post("/admin/partners", verifyToken, requireRole("platform_admin"), adminPartnerController.createPartner)
+
+// Delete Partner (Platform Admin)
+router.delete("/admin/partners/:id", verifyToken, requireRole("platform_admin"), adminPartnerController.deletePartner)
+
 module.exports = router

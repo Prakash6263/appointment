@@ -427,20 +427,171 @@
           "response": []
         },
         {
-          "name": "Get All Partners",
+          "name": "Suspend Partner",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}/suspend",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "partners", "{{partnerId}}", "suspend"]
+            },
+            "description": "Suspend a partner account"
+          },
+          "response": []
+        },
+        {
+          "name": "Disable Partner",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}/disable",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "partners", "{{partnerId}}", "disable"]
+            },
+            "description": "Disable a partner account (sets isActive to false)"
+          },
+          "response": []
+        },
+        {
+          "name": "Enable Partner",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}/enable",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "partners", "{{partnerId}}", "enable"]
+            },
+            "description": "Enable a partner account (sets isActive to true)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Partners (with Filters)",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{platformAdminToken}}"
+                "value": "Bearer {{adminToken}}"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners?status=PENDING&country=India&page=1&limit=10&search=Tech",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "partners"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING",
+                  "disabled": true
+                },
+                {
+                  "key": "isPending",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "isVerified",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "isSuspended",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "country",
+                  "value": "India",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "Mumbai",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "Tech",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get list of all partners with filtering options:\n- status: PENDING, VERIFIED, or SUSPENDED\n- isPending: true (filters for PENDING status)\n- isVerified: true (filters for VERIFIED status)\n- isSuspended: true (filters for SUSPENDED status)\n- country: Filter by country\n- city: Filter by city\n- search: Search by company name, owner name, or email\n- page: Page number (default 1)\n- limit: Results per page (default 10)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Partner (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"New Tech Company\",\n  \"ownerName\": \"Admin Created Partner\",\n  \"email\": \"partner@example.com\",\n  \"phone\": \"+1234567890\",\n  \"password\": \"SecurePass123\",\n  \"country\": \"India\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Mumbai\",\n  \"gstNumber\": \"27AABCT1234H1Z0\",\n  \"websiteName\": \"www.company.com\"\n}"
+            },
             "url": {
               "raw": "{{baseUrl}}/api/admin/partners",
               "host": ["{{baseUrl}}"],
               "path": ["api", "admin", "partners"]
-            }
+            },
+            "description": "Create a new partner account directly (Platform Admin only). Partner is automatically verified."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Partner (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "partners", "{{partnerId}}"]
+            },
+            "description": "Delete a partner account and all associated data (providers, services). This action is permanent."
           },
           "response": []
         },
@@ -489,32 +640,14 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\"\n}"
+            },
             "url": {
               "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}/approve",
               "host": ["{{baseUrl}}"],
               "path": ["api", "admin", "partners", "{{partnerId}}", "approve"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Suspend Partner",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{platformAdminToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}/suspend",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "admin", "partners", "{{partnerId}}", "suspend"]
             }
           },
           "response": []
@@ -620,9 +753,9 @@
               "raw": "{\n  \"businessName\": \"Tech Solutions Inc Updated\",\n  \"country\": \"India\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Mumbai\",\n  \"gstNumber\": \"27AABCT1234H1Z0\",\n  \"websiteName\": \"www.techsolutions-updated.com\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/partners",
+              "raw": "{{baseUrl}}/api/partner/profile",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "partners"]
+              "path": ["api", "partner", "profile"]
             },
             "description": "Update partner details including location (country, state, city), GST number, and website name"
           },
@@ -646,9 +779,9 @@
                   "raw": "{\n  \"country\": \"India\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Mumbai\"\n}"
                 },
                 "url": {
-                  "raw": "{{baseUrl}}/api/partners",
+                  "raw": "{{baseUrl}}/api/partner/profile",
                   "host": ["{{baseUrl}}"],
-                  "path": ["api", "partners"]
+                  "path": ["api", "partner", "profile"]
                 }
               },
               "status": "OK",

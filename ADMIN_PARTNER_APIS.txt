@@ -1,0 +1,419 @@
+================================================================================
+PLATFORM ADMIN PARTNER MANAGEMENT APIs
+================================================================================
+
+All Admin endpoints require:
+- Authorization header with Bearer token (platform_admin role)
+- Base URL: http://localhost:5000/api
+
+================================================================================
+1. GET ALL PARTNERS (with Filters)
+================================================================================
+
+Endpoint: GET /admin/partners
+
+Query Parameters:
+  - status: Filter by status (PENDING, VERIFIED, SUSPENDED)
+  - isPending: Filter for PENDING status (isPending=true)
+  - isVerified: Filter for VERIFIED status (isVerified=true)
+  - isSuspended: Filter for SUSPENDED status (isSuspended=true)
+  - country: Filter by country (case-insensitive partial match)
+  - city: Filter by city (case-insensitive partial match)
+  - search: Search by company name, owner name, or email (case-insensitive)
+  - page: Page number (default: 1)
+  - limit: Results per page (default: 10)
+
+Example Requests:
+
+1. Get all PENDING partners:
+   GET /admin/partners?isPending=true
+
+2. Get all VERIFIED partners:
+   GET /admin/partners?isVerified=true
+
+3. Get all SUSPENDED partners:
+   GET /admin/partners?isSuspended=true
+
+4. Get partners from a specific country:
+   GET /admin/partners?country=India&page=1&limit=10
+
+5. Get partners from a specific city:
+   GET /admin/partners?city=Mumbai
+
+6. Search partners by name or email:
+   GET /admin/partners?search=Tech
+
+7. Combine multiple filters:
+   GET /admin/partners?country=India&city=Mumbai&isVerified=true&page=1&limit=20
+
+Response (Success - 200):
+{
+  "success": true,
+  "count": 2,
+  "total": 50,
+  "page": 1,
+  "pages": 5,
+  "partners": [
+    {
+      "_id": "64f8a1b2c3d4e5f6g7h8i9j0",
+      "companyName": "Tech Solutions Inc",
+      "ownerName": "John Doe",
+      "email": "john@techsolutions.com",
+      "phone": "+1234567890",
+      "country": "India",
+      "state": "Maharashtra",
+      "city": "Mumbai",
+      "status": "PENDING",
+      "isActive": true,
+      "createdAt": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+
+================================================================================
+2. GET PARTNER DETAILS
+================================================================================
+
+Endpoint: GET /admin/partners/:id
+
+Parameters:
+  - id: Partner ID (MongoDB ObjectId)
+
+Example:
+  GET /admin/partners/64f8a1b2c3d4e5f6g7h8i9j0
+
+Response (Success - 200):
+{
+  "success": true,
+  "partner": {
+    "_id": "64f8a1b2c3d4e5f6g7h8i9j0",
+    "companyName": "Tech Solutions Inc",
+    "ownerName": "John Doe",
+    "email": "john@techsolutions.com",
+    "phone": "+1234567890",
+    "country": "India",
+    "state": "Maharashtra",
+    "city": "Mumbai",
+    "gstNumber": "27AABCT1234H1Z0",
+    "websiteName": "www.techsolutions.com",
+    "status": "PENDING",
+    "isActive": true,
+    "isEmailVerified": false,
+    "providers": [],
+    "services": [],
+    "createdAt": "2024-01-15T10:30:00Z"
+  }
+}
+
+================================================================================
+3. APPROVE PARTNER
+================================================================================
+
+Endpoint: PATCH /admin/partners/:id/approve
+
+Changes status from PENDING to VERIFIED
+
+Parameters:
+  - id: Partner ID
+
+Example:
+  PATCH /admin/partners/64f8a1b2c3d4e5f6g7h8i9j0/approve
+
+Response (Success - 200):
+{
+  "success": true,
+  "message": "Partner approved successfully",
+  "partner": {
+    "status": "VERIFIED",
+    "isEmailVerified": true
+  }
+}
+
+================================================================================
+4. SUSPEND PARTNER
+================================================================================
+
+Endpoint: PATCH /admin/partners/:id/suspend
+
+Changes status to SUSPENDED (prevents partner login)
+
+Parameters:
+  - id: Partner ID
+
+Example:
+  PATCH /admin/partners/64f8a1b2c3d4e5f6g7h8i9j0/suspend
+
+Response (Success - 200):
+{
+  "success": true,
+  "message": "Partner suspended successfully",
+  "partner": {
+    "status": "SUSPENDED"
+  }
+}
+
+================================================================================
+5. DISABLE PARTNER (NEW)
+================================================================================
+
+Endpoint: PATCH /admin/partners/:id/disable
+
+Sets isActive to false (partner account disabled but not suspended)
+
+Parameters:
+  - id: Partner ID
+
+Example:
+  PATCH /admin/partners/64f8a1b2c3d4e5f6g7h8i9j0/disable
+
+Response (Success - 200):
+{
+  "success": true,
+  "message": "Partner disabled successfully",
+  "partner": {
+    "isActive": false,
+    "status": "VERIFIED"
+  }
+}
+
+================================================================================
+6. ENABLE PARTNER (NEW)
+================================================================================
+
+Endpoint: PATCH /admin/partners/:id/enable
+
+Sets isActive to true (re-enables a disabled partner)
+
+Parameters:
+  - id: Partner ID
+
+Example:
+  PATCH /admin/partners/64f8a1b2c3d4e5f6g7h8i9j0/enable
+
+Response (Success - 200):
+{
+  "success": true,
+  "message": "Partner enabled successfully",
+  "partner": {
+    "isActive": true
+  }
+}
+
+================================================================================
+7. CREATE PARTNER (PLATFORM ADMIN) (NEW)
+================================================================================
+
+Endpoint: POST /admin/partners
+
+Creates a new partner account directly by platform admin.
+Partner is automatically verified and email-verified.
+
+Request Body (application/json):
+{
+  "companyName": "New Tech Company" (required),
+  "ownerName": "Admin Created Partner" (required),
+  "email": "partner@example.com" (required),
+  "phone": "+1234567890" (required),
+  "password": "SecurePass123" (required, min 6 chars),
+  "country": "India" (optional),
+  "state": "Maharashtra" (optional),
+  "city": "Mumbai" (optional),
+  "gstNumber": "27AABCT1234H1Z0" (optional),
+  "websiteName": "www.company.com" (optional)
+}
+
+Example:
+  curl -X POST http://localhost:5000/api/admin/partners \
+    -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "companyName": "New Tech Company",
+      "ownerName": "Admin Created Partner",
+      "email": "partner@example.com",
+      "phone": "+1234567890",
+      "password": "SecurePass123",
+      "country": "India",
+      "state": "Maharashtra",
+      "city": "Mumbai",
+      "gstNumber": "27AABCT1234H1Z0",
+      "websiteName": "www.company.com"
+    }'
+
+Response (Success - 201):
+{
+  "success": true,
+  "message": "Partner created successfully by platform admin",
+  "partner": {
+    "_id": "64f8a1b2c3d4e5f6g7h8i9j0",
+    "companyName": "New Tech Company",
+    "email": "partner@example.com",
+    "phone": "+1234567890",
+    "country": "India",
+    "state": "Maharashtra",
+    "city": "Mumbai",
+    "status": "VERIFIED",
+    "isActive": true
+  }
+}
+
+Errors:
+- 400: If required fields are missing
+- 400: If email already exists
+- 500: Server error
+
+================================================================================
+8. DELETE PARTNER (PLATFORM ADMIN) (NEW)
+================================================================================
+
+Endpoint: DELETE /admin/partners/:id
+
+Permanently deletes a partner and all associated data (providers, services).
+This action is irreversible.
+
+Parameters:
+  - id: Partner ID
+
+Example:
+  DELETE /admin/partners/64f8a1b2c3d4e5f6g7h8i9j0
+
+Response (Success - 200):
+{
+  "success": true,
+  "message": "Partner deleted successfully along with all associated data"
+}
+
+Errors:
+- 404: Partner not found
+- 500: Server error
+
+IMPORTANT: This will permanently delete:
+  - Partner account
+  - All providers associated with partner
+  - All services associated with partner
+  - All bookings and related data
+
+================================================================================
+STATUS FLOW DIAGRAM
+================================================================================
+
+    +----------+
+    | PENDING  | (New registration)
+    +----------+
+         |
+         | Approve PATCH /admin/partners/:id/approve
+         |
+         v
+    +----------+
+    | VERIFIED | (Approved partner)
+    +----------+
+         |
+         | Suspend PATCH /admin/partners/:id/suspend
+         |
+         v
+    +----------+
+    | SUSPENDED| (Suspended partner)
+    +----------+
+
+Note: Disable/Enable (isActive flag) is independent of status:
+  - A partner can be VERIFIED but disabled (isActive: false)
+  - A partner can be PENDING but enabled (isActive: true)
+
+================================================================================
+EXAMPLE WORKFLOWS
+================================================================================
+
+1. NEW PARTNER REGISTRATION WORKFLOW:
+
+   a) Partner registers via POST /partner/register
+      → Status: PENDING, isEmailVerified: false
+
+   b) Partner verifies email via link
+      → Status: PENDING, isEmailVerified: true
+
+   c) Admin reviews and approves via PATCH /admin/partners/:id/approve
+      → Status: VERIFIED, isEmailVerified: true
+
+   d) Partner can now login and use platform
+
+
+2. SUSPEND MISBEHAVING PARTNER:
+
+   a) Admin notices partner violation
+   
+   b) Admin suspends partner via PATCH /admin/partners/:id/suspend
+      → Status: SUSPENDED
+      → Partner cannot login
+      → Partner data is preserved
+
+   c) If reinstated, partner can login again with same data
+
+
+3. DISABLE INACTIVE PARTNER:
+
+   a) Partner hasn't used platform in 6 months
+
+   b) Admin disables partner via PATCH /admin/partners/:id/disable
+      → isActive: false
+      → Status remains VERIFIED
+
+   c) Partner can be re-enabled via PATCH /admin/partners/:id/enable
+      → isActive: true
+      → Partner can login again
+
+
+4. CREATE PARTNER DIRECTLY:
+
+   a) Admin creates partner manually via POST /admin/partners
+      → Status: VERIFIED (automatic)
+      → isEmailVerified: true (automatic)
+      → Ready to use immediately
+
+   b) Partner receives credentials and can login
+
+
+5. DELETE PARTNER:
+
+   a) Admin decides to remove partner
+   
+   b) Admin deletes partner via DELETE /admin/partners/:id
+      → All partner data deleted permanently
+      → Cannot be recovered
+
+================================================================================
+FILTERING EXAMPLES
+================================================================================
+
+Get all PENDING partners from India, Mumbai:
+GET /admin/partners?isPending=true&country=India&city=Mumbai
+
+Get all VERIFIED partners:
+GET /admin/partners?isVerified=true
+
+Get all SUSPENDED partners:
+GET /admin/partners?isSuspended=true
+
+Search for partner named "Tech":
+GET /admin/partners?search=Tech
+
+Paginated results (20 partners per page, page 2):
+GET /admin/partners?page=2&limit=20
+
+Complex filter (Verified partners in specific city, paginated):
+GET /admin/partners?isVerified=true&city=Mumbai&page=1&limit=15
+
+================================================================================
+AUTHENTICATION
+================================================================================
+
+All admin endpoints require:
+
+Header:
+  Authorization: Bearer <admin_jwt_token>
+
+The token must be from a user with role "platform_admin"
+
+Example:
+  curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+    http://localhost:5000/api/admin/partners
+
+================================================================================

@@ -116,6 +116,29 @@ const partnerSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    country: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    state: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    gstNumber: {
+      type: String,
+      trim: true,
+    },
+    websiteName: {
+      type: String,
+      trim: true,
+    },
   },
   { timestamps: true },
 )

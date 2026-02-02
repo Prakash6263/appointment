@@ -5,13 +5,21 @@ const User = require("../models/User")
 // Create Partner
 exports.createPartner = async (req, res) => {
   try {
-    const { businessName } = req.body
+    const { businessName, country, state, city, gstNumber, websiteName } = req.body
     const { userId } = req
 
     if (!businessName) {
       return res.status(400).json({
         success: false,
         message: "Business name is required",
+      })
+    }
+
+    // Validate required location fields
+    if (!country || !state || !city) {
+      return res.status(400).json({
+        success: false,
+        message: "Country, state, and city are required",
       })
     }
 
@@ -36,6 +44,11 @@ exports.createPartner = async (req, res) => {
     // Create partner
     const partner = new Partner({
       businessName,
+      country,
+      state,
+      city,
+      gstNumber: gstNumber || null,
+      websiteName: websiteName || null,
       ownerUserId: userId,
       license: {
         planId: freePlan._id,
@@ -96,7 +109,7 @@ exports.getPartner = async (req, res) => {
 exports.updatePartner = async (req, res) => {
   try {
     const { userId } = req
-    const { businessName } = req.body
+    const { businessName, country, state, city, gstNumber, websiteName } = req.body
 
     const partner = await Partner.findOne({ ownerUserId: userId })
     if (!partner) {
@@ -106,7 +119,13 @@ exports.updatePartner = async (req, res) => {
       })
     }
 
+    // Update allowed fields
     if (businessName) partner.businessName = businessName
+    if (country) partner.country = country
+    if (state) partner.state = state
+    if (city) partner.city = city
+    if (gstNumber !== undefined) partner.gstNumber = gstNumber
+    if (websiteName !== undefined) partner.websiteName = websiteName
 
     await partner.save()
 

@@ -2,41 +2,44 @@ const multer = require("multer")
 const path = require("path")
 const fs = require("fs")
 
-// Create uploads directory if it doesn't exist
+// Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, "../uploads")
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true })
 }
 
-// Set storage configuration
+// Configure storage
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: function (req, file, cb) {
     cb(null, uploadsDir)
   },
-  filename: (req, file, cb) => {
+  filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9)
-    const prefix = file.fieldname || "file"
-    cb(null, prefix + "-" + uniqueSuffix + path.extname(file.originalname))
+    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname))
   },
 })
 
-// File filter - only allow images
+// File filter for image uploads
 const fileFilter = (req, file, cb) => {
   const allowedMimes = ["image/jpeg", "image/png", "image/gif", "image/webp"]
-  if (allowedMimes.includes(file.mimetype)) {
+  const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+
+  const fileExt = path.extname(file.originalname).toLowerCase()
+
+  if (allowedMimes.includes(file.mimetype) && allowedExtensions.includes(fileExt)) {
     cb(null, true)
   } else {
-    cb(new Error("Only image files are allowed"), false)
+    cb(new Error("Invalid file type. Only images are allowed."), false)
   }
 }
 
-// Create multer upload middleware
+// Create multer instance
 const upload = multer({
-  storage,
-  fileFilter,
+  storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
+  fileFilter: fileFilter,
 })
 
 module.exports = upload

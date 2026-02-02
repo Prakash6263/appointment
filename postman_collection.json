@@ -1,349 +1,678 @@
 {
   "info": {
-    "name": "Authentication API",
-    "description": "Complete Auth API with OTP verification, Password Reset, Edit Profile, Image Upload, and Google OAuth for Customers and Providers",
+    "_postman_id": "partner-api-collection",
+    "name": "Partner Backend API",
+    "description": "Complete Partner Backend API Collection with Auth, CRUD, and Admin Functions",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Authentication",
+      "name": "1. PARTNER REGISTRATION",
       "item": [
         {
-          "name": "Customer Signup",
+          "name": "Register Partner",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"username\": \"customer123\",\n  \"phoneNumber\": \"+1234567890\",\n  \"password\": \"password123\",\n  \"role\": \"customer\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/signup",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "signup"]
-            }
-          }
-        },
-        {
-          "name": "Provider Signup",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"provider@example.com\",\n  \"username\": \"provider123\",\n  \"phoneNumber\": \"+1234567890\",\n  \"password\": \"password123\",\n  \"role\": \"provider\",\n  \"firstName\": \"Service\",\n  \"lastName\": \"Provider\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/signup",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "signup"]
-            }
-          }
-        },
-        {
-          "name": "Verify OTP",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"otp\": \"123456\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/verify-otp",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "verify-otp"]
-            }
-          }
-        },
-        {
-          "name": "Resend OTP",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"customer@example.com\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/resend-otp",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "resend-otp"]
-            }
-          }
-        },
-        {
-          "name": "Customer Login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"password123\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "login"]
-            }
-          }
-        },
-        {
-          "name": "Provider Login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"provider@example.com\",\n  \"password\": \"password123\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "login"]
-            }
-          }
-        },
-        {
-          "name": "Google OAuth Login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"googleId\": \"google_unique_id_12345\",\n  \"email\": \"user@gmail.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"customer\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/google-auth",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "google-auth"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Password Reset",
-      "item": [
-        {
-          "name": "Forgot Password (Send OTP)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"customer@example.com\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/forgot-password",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "forgot-password"]
-            }
-          }
-        },
-        {
-          "name": "Verify Reset OTP",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"otp\": \"123456\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/verify-reset-otp",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "verify-reset-otp"]
-            }
-          }
-        },
-        {
-          "name": "Reset Password",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"newPassword\": \"newpassword123\",\n  \"confirmPassword\": \"newpassword123\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/reset-password",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "reset-password"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Profile Management",
-      "item": [
-        {
-          "name": "Edit Profile with Image (Customer)",
-          "request": {
-            "method": "PUT",
             "header": [],
             "body": {
               "mode": "formdata",
               "formdata": [
                 {
-                  "key": "firstName",
-                  "value": "John",
+                  "key": "companyName",
+                  "value": "Tech Solutions Inc",
                   "type": "text"
                 },
                 {
-                  "key": "lastName",
-                  "value": "Doe",
-                  "type": "text"
-                },
-                {
-                  "key": "contact",
-                  "value": "07 007089 0620",
-                  "type": "text"
-                },
-                {
-                  "key": "address",
-                  "value": "2281 Rohar Street, Mumbai, India",
+                  "key": "ownerName",
+                  "value": "John Doe",
                   "type": "text"
                 },
                 {
                   "key": "email",
-                  "value": "customer@example.com",
+                  "value": "john@techsolutions.com",
                   "type": "text"
                 },
                 {
+                  "key": "phone",
+                  "value": "+1234567890",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "SecurePass123",
+                  "type": "text"
+                },
+                {
+                  "key": "confirmPassword",
+                  "value": "SecurePass123",
+                  "type": "text"
+                },
+                {
+                  "key": "logo",
+                  "description": "Company logo image (optional)",
+                  "type": "file",
+                  "src": []
+                },
+                {
                   "key": "profileImage",
+                  "description": "Partner profile image (optional)",
                   "type": "file",
                   "src": []
                 }
               ]
             },
             "url": {
-              "raw": "{{base_url}}/api/auth/edit-profile/{{userId}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "edit-profile", "{{userId}}"]
+              "raw": "{{baseUrl}}/api/partner/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "register"]
             }
-          }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. PLATFORM ADMIN APPROVAL",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"platformAdminToken\", jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@platform.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": []
         },
         {
-          "name": "Edit Profile with Image (Provider)",
+          "name": "Get All Partners",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{platformAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "partners"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Partner Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{platformAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "partners", "{{partnerId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Partner",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"partnerId\", jsonData.partner._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{platformAdminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "partners", "{{partnerId}}", "approve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Suspend Partner",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{platformAdminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}/suspend",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "partners", "{{partnerId}}", "suspend"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. EMAIL VERIFICATION",
+      "item": [
+        {
+          "name": "Verify Partner Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/verify-email/{{verifyToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "verify-email", "{{verifyToken}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. PARTNER LOGIN",
+      "item": [
+        {
+          "name": "Login Partner",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"partnerToken\", jsonData.token);",
+                  "    pm.environment.set(\"partnerId\", jsonData.partner._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@techsolutions.com\",\n  \"password\": \"SecurePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. PARTNER PROFILE",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "profile"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
             "body": {
               "mode": "formdata",
               "formdata": [
                 {
-                  "key": "firstName",
-                  "value": "Service",
+                  "key": "companyName",
+                  "value": "Tech Solutions Inc Updated",
                   "type": "text"
                 },
                 {
-                  "key": "lastName",
-                  "value": "Provider",
+                  "key": "ownerName",
+                  "value": "John Doe Updated",
                   "type": "text"
                 },
                 {
-                  "key": "contact",
-                  "value": "07 007089 0620",
+                  "key": "phone",
+                  "value": "+9876543210",
                   "type": "text"
                 },
                 {
-                  "key": "address",
-                  "value": "2281 Rohar Street, Mumbai, India",
-                  "type": "text"
-                },
-                {
-                  "key": "email",
-                  "value": "provider@example.com",
-                  "type": "text"
+                  "key": "logo",
+                  "description": "Updated company logo (optional)",
+                  "type": "file",
+                  "src": []
                 },
                 {
                   "key": "profileImage",
+                  "description": "Updated partner profile image (optional)",
                   "type": "file",
                   "src": []
                 }
               ]
             },
             "url": {
-              "raw": "{{base_url}}/api/auth/edit-profile/{{userId}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "edit-profile", "{{userId}}"]
+              "raw": "{{baseUrl}}/api/partner/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "profile"]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "Health Check",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{base_url}}/health",
-          "host": ["{{base_url}}"],
-          "path": ["health"]
+      "name": "6. PROVIDERS CRUD",
+      "item": [
+        {
+          "name": "Create Provider",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"providerId\", jsonData.provider._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Sarah Johnson\",\n  \"email\": \"sarah@techsolutions.com\",\n  \"phone\": \"+1111111111\",\n  \"specialization\": \"IT Support\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/providers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "providers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Providers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/providers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "providers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Provider",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Sarah Johnson Senior\",\n  \"email\": \"sarah.senior@techsolutions.com\",\n  \"phone\": \"+2222222222\",\n  \"specialization\": \"Senior IT Support\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/providers/{{providerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "providers", "{{providerId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Provider",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/providers/{{providerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "providers", "{{providerId}}"]
+            }
+          },
+          "response": []
         }
-      }
+      ]
+    },
+    {
+      "name": "7. SERVICES CRUD",
+      "item": [
+        {
+          "name": "Create Service",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"serviceId\", jsonData.service._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Network Setup Consultation\",\n  \"description\": \"Professional network infrastructure setup and configuration\",\n  \"price\": 299.99,\n  \"duration\": 120\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/services",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "services"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Services",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/services",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "services"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Service",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Premium Network Setup Consultation\",\n  \"description\": \"Professional premium network infrastructure setup and configuration\",\n  \"price\": 399.99,\n  \"duration\": 180,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/services/{{serviceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "services", "{{serviceId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/services/{{serviceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "services", "{{serviceId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. BOOKINGS",
+      "item": [
+        {
+          "name": "Get Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "bookings"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Bookings (Filtered by Status)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/bookings?status=CONFIRMED",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "bookings"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "CONFIRMED"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Booking Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"bookingId\", jsonData.booking._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CONFIRMED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/bookings/{{bookingId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "bookings", "{{bookingId}}", "status"]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
     {
-      "key": "base_url",
+      "key": "baseUrl",
       "value": "http://localhost:5000",
       "type": "string"
     },
     {
-      "key": "userId",
+      "key": "platformAdminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "partnerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "partnerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "providerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "serviceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bookingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "verifyToken",
       "value": "",
       "type": "string"
     }

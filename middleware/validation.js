@@ -18,7 +18,7 @@ const signupValidation = [
   body("username").notEmpty().withMessage("Username is required"),
   // body("phoneNumber").notEmpty().withMessage("Phone number is required"),
   body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
-  body("role").isIn(["customer", "provider"]).withMessage("Invalid role"),
+  body("role").isIn(["customer", "provider",]).withMessage("Invalid role"),
 ]
 
 // OTP verification validation
@@ -34,7 +34,7 @@ const resendOTPValidation = [body("email").isEmail().withMessage("Invalid email 
 const loginValidation = [
   body("email").isEmail().withMessage("Invalid email address"),
   body("password").notEmpty().withMessage("Password is required"),
-  body("role").isIn(["customer", "provider"]).withMessage("Invalid role"),
+  body("role").isIn(["customer", "provider","platform_admin"]).withMessage("Invalid role"),
 ]
 
 const forgotPasswordValidation = [body("email").isEmail().withMessage("Invalid email address")]

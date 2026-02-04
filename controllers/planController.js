@@ -1,5 +1,21 @@
 const Plan = require("../models/Plan")
 
+// Helper function to generate short ID
+const generateShortId = (planName) => {
+  // Create plan code from first 3 letters of plan name
+  const planCode = planName.toUpperCase().substring(0, 3)
+  
+  // Generate 5 random alphanumeric characters (uppercase letters and numbers)
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  let randomPart = ""
+  for (let i = 0; i < 5; i++) {
+    randomPart += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  
+  // Format: PLAN-STARTX-XXXXX (e.g., PLAN-PRO-7K9M2)
+  return `PLAN-${planCode}-${randomPart}`
+}
+
 // Create Plan
 exports.createPlan = async (req, res) => {
   try {
@@ -22,9 +38,21 @@ exports.createPlan = async (req, res) => {
       })
     }
 
+    // Generate unique short ID
+    let shortId
+    let isUnique = false
+    while (!isUnique) {
+      shortId = generateShortId(name)
+      const existingShortId = await Plan.findOne({ shortId })
+      if (!existingShortId) {
+        isUnique = true
+      }
+    }
+
     // Create new plan
     const plan = new Plan({
       name,
+      shortId,
       price: price || 0,
       billingCycle,
       customerLimit,
@@ -34,13 +62,15 @@ exports.createPlan = async (req, res) => {
 
     await plan.save()
 
+    console.log("[v0] Plan created with shortId:", shortId)
+
     res.status(201).json({
       success: true,
       message: "Plan created successfully",
       data: plan,
     })
   } catch (error) {
-    console.error("Create plan error:", error)
+    console.error("[v0] Create plan error:", error)
     res.status(500).json({
       success: false,
       message: error.message || "Failed to create plan",

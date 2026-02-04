@@ -4,14 +4,14 @@ const Plan = require("../models/Plan")
 const generateShortId = (planName) => {
   // Create plan code from first 3 letters of plan name
   const planCode = planName.toUpperCase().substring(0, 3)
-  
+
   // Generate 5 random alphanumeric characters (uppercase letters and numbers)
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   let randomPart = ""
   for (let i = 0; i < 5; i++) {
     randomPart += chars.charAt(Math.floor(Math.random() * chars.length))
   }
-  
+
   // Format: PLAN-STARTX-XXXXX (e.g., PLAN-PRO-7K9M2)
   return `PLAN-${planCode}-${randomPart}`
 }

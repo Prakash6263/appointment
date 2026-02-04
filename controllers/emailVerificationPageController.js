@@ -32,7 +32,7 @@ exports.verifyEmailPage = async (req, res) => {
         partner.companyName,
         partner.ownerName,
         partner.email,
-        process.env.BACKEND_BASE_URL || "http://localhost:5000",
+        process.env.BACKEND_BASE_URL
       ),
     )
   } catch (error) {

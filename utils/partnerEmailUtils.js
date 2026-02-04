@@ -13,13 +13,13 @@ const transporter = nodemailer.createTransport({
 
 // Generate verification link with environment variables
 const generateVerificationLink = (token) => {
-  const baseURL = process.env.BACKEND_BASE_URL || "http://localhost:5000"
+  const baseURL = process.env.BACKEND_BASE_URL
   return `${baseURL}/api/partner/verify-email/${token}`
 }
 
 // Generate login URL with environment variables
 const generateLoginURL = () => {
-  const frontendURL = process.env.FRONTEND_BASE_URL || "http://localhost:3000"
+  const frontendURL = process.env.FRONTEND_BASE_URL
   return `${frontendURL}/partner/login`
 }
 

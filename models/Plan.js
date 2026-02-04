@@ -14,6 +14,10 @@ const planSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    description: {
+      type: String,
+      default: "",
+    },
     price: {
       type: Number,
       required: true,
@@ -31,12 +35,6 @@ const planSchema = new mongoose.Schema(
     providerLimit: {
       type: Number,
       required: true,
-    },
-    features: {
-      analytics: { type: Boolean, default: false },
-      customDomain: { type: Boolean, default: false },
-      advancedReporting: { type: Boolean, default: false },
-      apiAccess: { type: Boolean, default: false },
     },
     isActive: {
       type: Boolean,

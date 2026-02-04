@@ -19,7 +19,7 @@ const generateShortId = (planName) => {
 // Create Plan
 exports.createPlan = async (req, res) => {
   try {
-    const { name, price, billingCycle, customerLimit, providerLimit, features } = req.body
+    const { name, price, billingCycle, customerLimit, providerLimit, description } = req.body
 
     // Validate required fields
     if (!name || !billingCycle || customerLimit === undefined) {
@@ -57,7 +57,7 @@ exports.createPlan = async (req, res) => {
       billingCycle,
       customerLimit,
       providerLimit: providerLimit || customerLimit, // Default to customerLimit if not provided
-      features: features || {},
+      description: description || "",
     })
 
     await plan.save()
@@ -82,7 +82,7 @@ exports.createPlan = async (req, res) => {
 exports.updatePlan = async (req, res) => {
   try {
     const { id } = req.params
-    const { name, price, billingCycle, customerLimit, providerLimit, features, isActive } = req.body
+    const { name, price, billingCycle, customerLimit, providerLimit, description, isActive } = req.body
 
     // Find plan
     const plan = await Plan.findById(id)
@@ -99,7 +99,7 @@ exports.updatePlan = async (req, res) => {
     if (billingCycle) plan.billingCycle = billingCycle
     if (customerLimit !== undefined) plan.customerLimit = customerLimit
     if (providerLimit !== undefined) plan.providerLimit = providerLimit
-    if (features) plan.features = { ...plan.features, ...features }
+    if (description !== undefined) plan.description = description
     if (isActive !== undefined) plan.isActive = isActive
 
     await plan.save()

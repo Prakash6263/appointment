@@ -33,8 +33,6 @@ const planSchema = new mongoose.Schema(
       required: true,
     },
     features: {
-      branding: { type: Boolean, default: false },
-      domain: { type: Boolean, default: false },
       analytics: { type: Boolean, default: false },
       customDomain: { type: Boolean, default: false },
       advancedReporting: { type: Boolean, default: false },

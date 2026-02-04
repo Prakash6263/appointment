@@ -22,10 +22,10 @@ exports.createPlan = async (req, res) => {
     const { name, price, billingCycle, customerLimit, providerLimit, features } = req.body
 
     // Validate required fields
-    if (!name || !billingCycle || customerLimit === undefined || providerLimit === undefined) {
+    if (!name || !billingCycle || customerLimit === undefined) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields",
+        message: "Missing required fields: name, billingCycle, and customerLimit are required",
       })
     }
 
@@ -56,7 +56,7 @@ exports.createPlan = async (req, res) => {
       price: price || 0,
       billingCycle,
       customerLimit,
-      providerLimit,
+      providerLimit: providerLimit || customerLimit, // Default to customerLimit if not provided
       features: features || {},
     })
 

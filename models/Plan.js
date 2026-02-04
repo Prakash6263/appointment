@@ -8,6 +8,12 @@ const planSchema = new mongoose.Schema(
       enum: ["Free", "Starter", "Pro", "Enterprise"],
       unique: true,
     },
+    shortId: {
+      type: String,
+      unique: true,
+      required: true,
+      index: true,
+    },
     price: {
       type: Number,
       required: true,

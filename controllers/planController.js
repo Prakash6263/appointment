@@ -4,14 +4,14 @@ const Plan = require("../models/Plan")
 const generateShortId = (planName) => {
   // Create plan code from first 3 letters of plan name
   const planCode = planName.toUpperCase().substring(0, 3)
-  
+
   // Generate 5 random alphanumeric characters (uppercase letters and numbers)
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   let randomPart = ""
   for (let i = 0; i < 5; i++) {
     randomPart += chars.charAt(Math.floor(Math.random() * chars.length))
   }
-  
+
   // Format: PLAN-STARTX-XXXXX (e.g., PLAN-PRO-7K9M2)
   return `PLAN-${planCode}-${randomPart}`
 }
@@ -22,10 +22,10 @@ exports.createPlan = async (req, res) => {
     const { name, price, billingCycle, customerLimit, providerLimit, features } = req.body
 
     // Validate required fields
-    if (!name || !billingCycle || customerLimit === undefined || providerLimit === undefined) {
+    if (!name || !billingCycle || customerLimit === undefined) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields",
+        message: "Missing required fields: name, billingCycle, and customerLimit are required",
       })
     }
 
@@ -56,7 +56,7 @@ exports.createPlan = async (req, res) => {
       price: price || 0,
       billingCycle,
       customerLimit,
-      providerLimit,
+      providerLimit: providerLimit || customerLimit, // Default to customerLimit if not provided
       features: features || {},
     })
 

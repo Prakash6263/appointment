@@ -26,7 +26,7 @@ app.use("/api", routes)
 
 // Health check
 app.get("/health", (req, res) => {
-  res.json({ status: "API is running for tests" })
+  res.json({ status: "API is running for testss" })
 })
 
 // Error handling middleware

@@ -47,24 +47,39 @@ exports.confirmVerifyEmail = async (req, res) => {
     const { token } = req.body
 
     if (!token) {
-      return res.status(400).send(getErrorHTML("Token is required"))
+      return res.status(400).json({
+        success: false,
+        message: "Token is required"
+      })
     }
 
     // Verify the token
     const decoded = verifyEmailVerificationToken(token)
     if (!decoded) {
-      return res.status(400).send(getInvalidTokenHTML())
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired token"
+      })
     }
 
     // Find partner
     const partner = await Partner.findById(decoded.partnerId)
     if (!partner) {
-      return res.status(404).send(getPartnerNotFoundHTML())
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found"
+      })
     }
 
     // Check if already verified
     if (partner.isEmailVerified) {
-      return res.status(400).send(getAlreadyVerifiedHTML(partner.companyName, partner.ownerName))
+      return res.status(200).json({
+        success: true,
+        message: "Email already verified",
+        alreadyVerified: true,
+        companyName: partner.companyName,
+        ownerName: partner.ownerName
+      })
     }
 
     // Mark email as verified
@@ -75,17 +90,18 @@ exports.confirmVerifyEmail = async (req, res) => {
 
     console.log("[v0] Email verified for partner:", partner._id, "Email:", partner.email)
 
-    return res.status(200).send(
-      getSuccessVerificationHTML(
-        partner.companyName,
-        partner.ownerName,
-        partner.email,
-        process.env.FRONTEND_BASE_URL || "http://localhost:3000",
-      ),
-    )
+    return res.status(200).json({
+      success: true,
+      message: "Email verified successfully",
+      companyName: partner.companyName,
+      ownerName: partner.ownerName
+    })
   } catch (error) {
     console.error("[v0] Verification confirmation error:", error)
-    return res.status(500).send(getErrorHTML(error.message || "Verification failed"))
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Verification failed"
+    })
   }
 }
 
@@ -380,7 +396,7 @@ function getVerificationPageHTML(token, companyName, ownerName, email, backendUR
               
               setTimeout(() => {
                 window.location.href = '${process.env.FRONTEND_BASE_URL || "http://localhost:3000"}/partner/login';
-              }, 3000);
+              }, 2000);
             } else {
               messageDiv.innerHTML = \`
                 <div class="message error-message">
@@ -392,7 +408,7 @@ function getVerificationPageHTML(token, companyName, ownerName, email, backendUR
               verifyBtn.disabled = false;
             }
           } catch (error) {
-            console.error('Error:', error);
+            console.error('[v0] Fetch error:', error);
             loading.style.display = 'none';
             content.style.display = 'block';
             verifyBtn.disabled = false;

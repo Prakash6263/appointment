@@ -56,7 +56,7 @@ exports.createPlan = async (req, res) => {
       price: price || 0,
       billingCycle,
       customerLimit,
-      providerLimit: providerLimit || customerLimit, // Default to customerLimit if not provided
+      providerLimit: providerLimit || 0,
       features: features || {},
     })
 

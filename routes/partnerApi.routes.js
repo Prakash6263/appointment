@@ -39,11 +39,14 @@ router.post("/partner/confirm-verify", emailVerificationPageController.confirmVe
 // Login Partner
 router.post("/partner/login", partnerAuthController.loginPartner)
 
-// Forget Password - Send Reset Email (Public)
+// Forget Password - Send OTP to Email (Public)
 router.post("/partner/forget-password", partnerAuthController.forgetPassword)
 
-// Reset Password - Update Password with Token (Public)
-router.post("/partner/reset-password/:token", partnerAuthController.resetPassword)
+// Verify Password Reset OTP (Public)
+router.post("/partner/verify-reset-otp", partnerAuthController.verifyPasswordResetOTP)
+
+// Reset Password - Update Password with OTP (Public)
+router.post("/partner/reset-password", partnerAuthController.resetPassword)
 
 // =====================
 // PARTNER PROTECTED ROUTES

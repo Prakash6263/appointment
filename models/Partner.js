@@ -136,12 +136,17 @@ const partnerSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    passwordResetToken: {
+    passwordResetOTP: {
       type: String,
       select: false,
     },
-    passwordResetTokenExpires: {
+    passwordResetOTPExpires: {
       type: Date,
+      select: false,
+    },
+    passwordResetAttempts: {
+      type: Number,
+      default: 0,
       select: false,
     },
   },
@@ -171,6 +176,9 @@ partnerSchema.methods.toJSON = function () {
   delete partner.password
   delete partner.emailVerificationToken
   delete partner.emailVerificationTokenExpires
+  delete partner.passwordResetOTP
+  delete partner.passwordResetOTPExpires
+  delete partner.passwordResetAttempts
   return partner
 }
 

@@ -496,7 +496,7 @@ const getPartnerApprovalEmailHTML = (companyName, ownerName, loginURL) => {
   `
 }
 
-const getPartnerPasswordResetEmailHTML = (companyName, ownerName, resetLink) => {
+const getPartnerPasswordResetEmailHTML = (companyName, ownerName, otp) => {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -563,41 +563,26 @@ const getPartnerPasswordResetEmailHTML = (companyName, ownerName, resetLink) => 
         .warning-box p:last-child {
           margin-bottom: 0;
         }
-        .cta-button {
-          display: inline-block;
+        .otp-box {
           background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-          color: white;
-          padding: 14px 40px;
-          text-decoration: none;
-          border-radius: 6px;
-          font-weight: 600;
-          font-size: 16px;
-          margin: 20px 0;
-          transition: opacity 0.3s ease;
-        }
-        .button-container {
+          border-radius: 8px;
+          padding: 30px;
           text-align: center;
           margin: 30px 0;
+          color: white;
         }
-        .link-section {
-          background-color: #f0f0f0;
-          padding: 15px;
-          border-radius: 4px;
-          margin: 20px 0;
-          word-break: break-all;
-        }
-        .link-section p {
-          margin: 0 0 8px 0;
-          color: #666;
-          font-size: 13px;
+        .otp-label {
+          font-size: 14px;
           font-weight: 500;
+          margin-bottom: 15px;
+          opacity: 0.9;
         }
-        .link-section a {
-          color: #f59e0b;
-          text-decoration: none;
-          font-size: 12px;
-          display: block;
-          word-wrap: break-word;
+        .otp-code {
+          font-size: 36px;
+          font-weight: 700;
+          letter-spacing: 8px;
+          font-family: 'Courier New', monospace;
+          word-break: break-all;
         }
         .info-text {
           color: #888;
@@ -672,9 +657,9 @@ const getPartnerPasswordResetEmailHTML = (companyName, ownerName, resetLink) => 
           .email-body {
             padding: 20px 15px;
           }
-          .cta-button {
-            padding: 12px 30px;
-            font-size: 15px;
+          .otp-code {
+            font-size: 28px;
+            letter-spacing: 4px;
           }
         }
       </style>
@@ -684,7 +669,7 @@ const getPartnerPasswordResetEmailHTML = (companyName, ownerName, resetLink) => 
         <!-- Header -->
         <div class="email-header">
           <h1>🔐 Reset Your Password</h1>
-          <p>Follow the link below to set a new password</p>
+          <p>Enter the OTP below to set a new password</p>
         </div>
 
         <!-- Body -->
@@ -700,42 +685,37 @@ const getPartnerPasswordResetEmailHTML = (companyName, ownerName, resetLink) => 
           <!-- Warning Box -->
           <div class="warning-box">
             <p><strong>⚠️ Security Notice:</strong></p>
-            <p>This password reset link will expire in <strong>1 hour</strong>. If you didn't request this, 
+            <p>This OTP will expire in <strong>10 minutes</strong>. If you didn't request this, 
             please ignore this email or contact our support team immediately.</p>
           </div>
 
-          <!-- CTA Button -->
-          <div class="button-container">
-            <a href="${resetLink}" class="cta-button">Reset Your Password</a>
-          </div>
-
-          <!-- Alternative Link -->
-          <div class="link-section">
-            <p><strong>Or copy and paste this link in your browser:</strong></p>
-            <a href="${resetLink}">${resetLink}</a>
+          <!-- OTP Box -->
+          <div class="otp-box">
+            <div class="otp-label">Your Password Reset Code</div>
+            <div class="otp-code">${otp}</div>
           </div>
 
           <!-- Expiry Info -->
           <div style="text-align: center;">
-            <span class="expiry-badge">⏱ This link expires in 1 hour</span>
+            <span class="expiry-badge">⏱ This code expires in 10 minutes</span>
           </div>
+
+          <!-- Info Text -->
+          <p class="info-text">
+            Enter this OTP on the password reset page to proceed with changing your password. 
+            Never share this code with anyone, not even our support team.
+          </p>
 
           <!-- Security Tips -->
           <div class="security-tips">
             <p><strong>🔒 Security Tips:</strong></p>
             <ul style="padding-left: 20px; margin: 10px 0;">
-              <li>Never share this link with anyone</li>
+              <li>Never share this OTP with anyone</li>
               <li>Make sure your new password is strong and unique</li>
               <li>Use a combination of uppercase, lowercase, numbers, and symbols</li>
               <li>Never share your password with support staff</li>
             </ul>
           </div>
-
-          <!-- Info Text -->
-          <p class="info-text">
-            If you didn't request a password reset, please ignore this email and your password will remain unchanged. 
-            If you believe your account has been compromised, contact our support team immediately.
-          </p>
 
           <hr class="footer-divider">
 

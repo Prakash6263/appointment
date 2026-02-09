@@ -71,9 +71,8 @@ const sendPartnerApprovalEmail = async (email, companyName, ownerName) => {
   }
 }
 
-const sendPartnerPasswordResetEmail = async (email, companyName, ownerName, token) => {
-  const resetLink = generatePasswordResetLink(token)
-  const htmlContent = getPartnerPasswordResetEmailHTML(companyName, ownerName, resetLink)
+const sendPartnerPasswordResetEmail = async (email, companyName, ownerName, otp) => {
+  const htmlContent = getPartnerPasswordResetEmailHTML(companyName, ownerName, otp)
 
   const mailOptions = {
     from: `"Appointment App" <${process.env.GMAIL_EMAIL}>`,
@@ -84,7 +83,7 @@ const sendPartnerPasswordResetEmail = async (email, companyName, ownerName, toke
 
   try {
     await transporter.sendMail(mailOptions)
-    console.log(`[v0] Password reset email sent to ${email}`)
+    console.log(`[v0] Password reset OTP email sent to ${email}`)
     return true
   } catch (error) {
     console.error("[v0] Email sending error:", error)

@@ -61,10 +61,16 @@ const verifyPasswordResetToken = (token) => {
   }
 }
 
+// Generate OTP for password reset
+const generatePasswordResetOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString() // 6-digit OTP
+}
+
 module.exports = {
   generatePartnerToken,
   generateEmailVerificationToken,
   verifyEmailVerificationToken,
   generatePasswordResetToken,
   verifyPasswordResetToken,
+  generatePasswordResetOTP,
 }

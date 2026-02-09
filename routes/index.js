@@ -18,7 +18,7 @@ router.use("/legal", legalRoutes)
 router.use("/admin", adminRoutes)
 router.use("/location", locationRoutes)
 
-router.use("", partnerApiRoutes)
+router.use("/", partnerApiRoutes)
 router.use("/providers", providerRoutes)
 router.use("/notifications", notificationRoutes)
 router.use("/availability", availabilityRoutes)

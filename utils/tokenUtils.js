@@ -37,8 +37,34 @@ const verifyEmailVerificationToken = (token) => {
   }
 }
 
+const generatePasswordResetToken = (partnerId, email) => {
+  return jwt.sign(
+    {
+      partnerId,
+      email,
+      type: "password_reset",
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" },
+  )
+}
+
+const verifyPasswordResetToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    if (decoded.type !== "password_reset") {
+      throw new Error("Invalid token type")
+    }
+    return decoded
+  } catch (error) {
+    return null
+  }
+}
+
 module.exports = {
   generatePartnerToken,
   generateEmailVerificationToken,
   verifyEmailVerificationToken,
+  generatePasswordResetToken,
+  verifyPasswordResetToken,
 }

@@ -136,6 +136,14 @@ const partnerSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
+    passwordResetTokenExpires: {
+      type: Date,
+      select: false,
+    },
   },
   { timestamps: true },
 )

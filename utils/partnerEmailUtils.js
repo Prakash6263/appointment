@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer")
-const { getPartnerVerificationEmailHTML, getPartnerApprovalEmailHTML } = require("./emailTemplates")
+const { getPartnerVerificationEmailHTML, getPartnerApprovalEmailHTML, getPartnerPasswordResetEmailHTML } = require("./emailTemplates")
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -21,6 +21,12 @@ const generateVerificationLink = (token) => {
 const generateLoginURL = () => {
   const frontendURL = process.env.FRONTEND_BASE_URL
   return `${frontendURL}/partner/login`
+}
+
+// Generate password reset link with environment variables
+const generatePasswordResetLink = (token) => {
+  const baseURL = process.env.BACKEND_BASE_URL
+  return `${baseURL}/api/partner/reset-password/${token}`
 }
 
 const sendPartnerVerificationEmail = async (email, companyName, ownerName, token) => {
@@ -65,9 +71,32 @@ const sendPartnerApprovalEmail = async (email, companyName, ownerName) => {
   }
 }
 
+const sendPartnerPasswordResetEmail = async (email, companyName, ownerName, token) => {
+  const resetLink = generatePasswordResetLink(token)
+  const htmlContent = getPartnerPasswordResetEmailHTML(companyName, ownerName, resetLink)
+
+  const mailOptions = {
+    from: `"Appointment App" <${process.env.GMAIL_EMAIL}>`,
+    to: email,
+    subject: "Reset Your Partner Account Password - Appointment App",
+    html: htmlContent,
+  }
+
+  try {
+    await transporter.sendMail(mailOptions)
+    console.log(`[v0] Password reset email sent to ${email}`)
+    return true
+  } catch (error) {
+    console.error("[v0] Email sending error:", error)
+    throw new Error("Failed to send password reset email")
+  }
+}
+
 module.exports = {
   sendPartnerVerificationEmail,
   sendPartnerApprovalEmail,
   generateVerificationLink,
   generateLoginURL,
+  generatePasswordResetLink,
+  sendPartnerPasswordResetEmail,
 }

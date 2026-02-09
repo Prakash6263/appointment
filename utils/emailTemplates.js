@@ -496,7 +496,277 @@ const getPartnerApprovalEmailHTML = (companyName, ownerName, loginURL) => {
   `
 }
 
+const getPartnerPasswordResetEmailHTML = (companyName, ownerName, resetLink) => {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Reset Your Password</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          margin: 0;
+          padding: 0;
+          background-color: #f5f5f5;
+        }
+        .email-container {
+          max-width: 600px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .email-header {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          padding: 40px 20px;
+          text-align: center;
+          color: white;
+        }
+        .email-header h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 600;
+        }
+        .email-body {
+          padding: 40px 30px;
+        }
+        .greeting {
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+        .greeting strong {
+          color: #f59e0b;
+        }
+        .intro-text {
+          color: #555;
+          margin-bottom: 30px;
+          line-height: 1.8;
+          font-size: 15px;
+        }
+        .warning-box {
+          background-color: #fef3c7;
+          border-left: 4px solid #f59e0b;
+          padding: 20px;
+          margin: 30px 0;
+          border-radius: 4px;
+        }
+        .warning-box p {
+          margin: 0 0 10px 0;
+          color: #92400e;
+          font-size: 14px;
+        }
+        .warning-box p:last-child {
+          margin-bottom: 0;
+        }
+        .cta-button {
+          display: inline-block;
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          color: white;
+          padding: 14px 40px;
+          text-decoration: none;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 16px;
+          margin: 20px 0;
+          transition: opacity 0.3s ease;
+        }
+        .button-container {
+          text-align: center;
+          margin: 30px 0;
+        }
+        .link-section {
+          background-color: #f0f0f0;
+          padding: 15px;
+          border-radius: 4px;
+          margin: 20px 0;
+          word-break: break-all;
+        }
+        .link-section p {
+          margin: 0 0 8px 0;
+          color: #666;
+          font-size: 13px;
+          font-weight: 500;
+        }
+        .link-section a {
+          color: #f59e0b;
+          text-decoration: none;
+          font-size: 12px;
+          display: block;
+          word-wrap: break-word;
+        }
+        .info-text {
+          color: #888;
+          font-size: 14px;
+          margin: 20px 0;
+          line-height: 1.6;
+        }
+        .security-tips {
+          background-color: #f3f4f6;
+          padding: 20px;
+          border-radius: 4px;
+          margin: 20px 0;
+        }
+        .security-tips p {
+          margin: 0 0 10px 0;
+          color: #666;
+          font-size: 14px;
+        }
+        .security-tips p:last-child {
+          margin-bottom: 0;
+        }
+        .security-tips li {
+          color: #666;
+          font-size: 14px;
+          margin-bottom: 8px;
+        }
+        .expiry-badge {
+          display: inline-block;
+          background-color: #fef3c7;
+          color: #92400e;
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 500;
+          margin: 10px 0;
+        }
+        .footer-divider {
+          border: none;
+          border-top: 1px solid #ddd;
+          margin: 30px 0;
+        }
+        .email-footer {
+          background-color: #f9f9f9;
+          padding: 30px;
+          border-top: 1px solid #eee;
+          text-align: center;
+        }
+        .footer-text {
+          color: #999;
+          font-size: 12px;
+          margin: 0;
+        }
+        .footer-links {
+          margin-top: 15px;
+        }
+        .footer-links a {
+          color: #f59e0b;
+          text-decoration: none;
+          font-size: 12px;
+          margin: 0 10px;
+        }
+        @media (max-width: 600px) {
+          .email-container {
+            border-radius: 0;
+          }
+          .email-header {
+            padding: 30px 15px;
+          }
+          .email-header h1 {
+            font-size: 24px;
+          }
+          .email-body {
+            padding: 20px 15px;
+          }
+          .cta-button {
+            padding: 12px 30px;
+            font-size: 15px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="email-container">
+        <!-- Header -->
+        <div class="email-header">
+          <h1>🔐 Reset Your Password</h1>
+          <p>Follow the link below to set a new password</p>
+        </div>
+
+        <!-- Body -->
+        <div class="email-body">
+          <p class="greeting">Hello <strong>${ownerName}</strong>,</p>
+
+          <p class="intro-text">
+            We received a request to reset the password for your partner account associated with 
+            <span style="color: #f59e0b; font-weight: 600;">${companyName}</span>. 
+            If you didn't make this request, you can safely ignore this email.
+          </p>
+
+          <!-- Warning Box -->
+          <div class="warning-box">
+            <p><strong>⚠️ Security Notice:</strong></p>
+            <p>This password reset link will expire in <strong>1 hour</strong>. If you didn't request this, 
+            please ignore this email or contact our support team immediately.</p>
+          </div>
+
+          <!-- CTA Button -->
+          <div class="button-container">
+            <a href="${resetLink}" class="cta-button">Reset Your Password</a>
+          </div>
+
+          <!-- Alternative Link -->
+          <div class="link-section">
+            <p><strong>Or copy and paste this link in your browser:</strong></p>
+            <a href="${resetLink}">${resetLink}</a>
+          </div>
+
+          <!-- Expiry Info -->
+          <div style="text-align: center;">
+            <span class="expiry-badge">⏱ This link expires in 1 hour</span>
+          </div>
+
+          <!-- Security Tips -->
+          <div class="security-tips">
+            <p><strong>🔒 Security Tips:</strong></p>
+            <ul style="padding-left: 20px; margin: 10px 0;">
+              <li>Never share this link with anyone</li>
+              <li>Make sure your new password is strong and unique</li>
+              <li>Use a combination of uppercase, lowercase, numbers, and symbols</li>
+              <li>Never share your password with support staff</li>
+            </ul>
+          </div>
+
+          <!-- Info Text -->
+          <p class="info-text">
+            If you didn't request a password reset, please ignore this email and your password will remain unchanged. 
+            If you believe your account has been compromised, contact our support team immediately.
+          </p>
+
+          <hr class="footer-divider">
+
+          <!-- Additional Help -->
+          <p class="info-text">
+            Need help? Contact our support team at any time. We're here to assist you with any account-related issues.
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+          <p class="footer-text">
+            © ${new Date().getFullYear()} Appointment App. All rights reserved.
+          </p>
+          <div class="footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms & Conditions</a>
+            <a href="#">Contact Support</a>
+          </div>
+          <p class="footer-text" style="margin-top: 15px;">
+            This is an automated message. Please do not reply to this email.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+}
+
 module.exports = {
   getPartnerVerificationEmailHTML,
   getPartnerApprovalEmailHTML,
+  getPartnerPasswordResetEmailHTML,
 }

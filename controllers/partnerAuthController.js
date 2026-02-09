@@ -6,10 +6,13 @@ const {
   generatePartnerToken,
   generateEmailVerificationToken,
   verifyEmailVerificationToken,
+  generatePasswordResetToken,
+  verifyPasswordResetToken,
 } = require("../utils/tokenUtils")
 const {
   sendPartnerVerificationEmail,
   sendPartnerApprovalEmail,
+  sendPartnerPasswordResetEmail,
 } = require("../utils/partnerEmailUtils")
 
 // Register Partner
@@ -302,6 +305,126 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || "Failed to update profile",
+    })
+  }
+}
+
+// Forget Password - Send Reset Email
+exports.forgetPassword = async (req, res) => {
+  try {
+    const { email } = req.body
+
+    // Validation
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      })
+    }
+
+    // Find partner by email
+    const partner = await Partner.findOne({ email: email.toLowerCase() })
+    if (!partner) {
+      // Don't reveal if email exists (security best practice)
+      return res.status(200).json({
+        success: true,
+        message: "If an account with this email exists, a password reset link has been sent",
+      })
+    }
+
+    // Generate password reset token
+    const resetToken = generatePasswordResetToken(partner._id, partner.email)
+
+    // Update partner with reset token
+    partner.passwordResetToken = resetToken
+    partner.passwordResetTokenExpires = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+    await partner.save()
+
+    // Send password reset email
+    await sendPartnerPasswordResetEmail(partner.email, partner.companyName, partner.ownerName, resetToken)
+
+    res.status(200).json({
+      success: true,
+      message: "If an account with this email exists, a password reset link has been sent",
+    })
+  } catch (error) {
+    console.error("Forget password error:", error)
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to process forget password request",
+    })
+  }
+}
+
+// Reset Password - Update Password with Token
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params
+    const { password, confirmPassword } = req.body
+
+    // Validation
+    if (!password || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Both password fields are required",
+      })
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Passwords do not match",
+      })
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
+      })
+    }
+
+    // Verify password reset token
+    const decoded = verifyPasswordResetToken(token)
+    if (!decoded) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired password reset link",
+      })
+    }
+
+    // Find partner
+    const partner = await Partner.findById(decoded.partnerId).select("+passwordResetToken +passwordResetTokenExpires")
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found",
+      })
+    }
+
+    // Verify token matches and hasn't expired
+    if (partner.passwordResetToken !== token || partner.passwordResetTokenExpires < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired password reset link",
+      })
+    }
+
+    // Update password
+    partner.password = password
+    partner.passwordResetToken = undefined
+    partner.passwordResetTokenExpires = undefined
+    await partner.save()
+
+    res.json({
+      success: true,
+      message: "Password reset successfully. You can now login with your new password.",
+    })
+  } catch (error) {
+    console.error("Reset password error:", error)
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to reset password",
     })
   }
 }

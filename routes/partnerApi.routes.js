@@ -39,6 +39,12 @@ router.post("/partner/confirm-verify", emailVerificationPageController.confirmVe
 // Login Partner
 router.post("/partner/login", partnerAuthController.loginPartner)
 
+// Forget Password - Send Reset Email (Public)
+router.post("/partner/forget-password", partnerAuthController.forgetPassword)
+
+// Reset Password - Update Password with Token (Public)
+router.post("/partner/reset-password/:token", partnerAuthController.resetPassword)
+
 // =====================
 // PARTNER PROTECTED ROUTES
 // =====================

@@ -1,0 +1,1617 @@
+{
+  "info": {
+    "_postman_id": "1d93d1dc-eb0b-4051-9eda-e6d9ef07dda7",
+    "name": "Partner Backend API - Complete",
+    "description": "Complete Partner Backend API Collection with Auth, CRUD, Admin Functions, and FREE Location APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "46536919"
+  },
+  "item": [
+    {
+      "name": "0. LOCATION APIs (FREE)",
+      "item": [
+        {
+          "name": "Get All Countries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://{{baseUrl}}:5000/api/location/countries",
+              "protocol": "http",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "location",
+                "countries"
+              ]
+            },
+            "description": "Fetch list of all countries from CountriesNow API with 24-hour caching"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/countries",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "location",
+                    "countries"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Countries fetched successfully\",\n  \"data\": [\"Afghanistan\", \"Albania\", \"Algeria\", ...],\n  \"count\": 193\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get States by Country",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country\": \"India\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/location/states",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "location",
+                "states"
+              ]
+            },
+            "description": "Fetch list of states for a given country. Cached per country."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"country\": \"India\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/states",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "location",
+                    "states"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"States for India fetched successfully\",\n  \"data\": [\"Andhra Pradesh\", \"Arunachal Pradesh\", \"Assam\", ...],\n  \"count\": 36\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Cities by Country & State",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country\": \"India\",\n  \"state\": \"Delhi\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/location/cities",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "location",
+                "cities"
+              ]
+            },
+            "description": "Fetch list of cities for a given country and state. Cached per state."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"country\": \"India\",\n  \"state\": \"Delhi\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/cities",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "location",
+                    "cities"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Cities for Delhi, India fetched successfully\",\n  \"data\": [\"Delhi\"],\n  \"count\": 1\n}"
+            }
+          ]
+        },
+        {
+          "name": "Geocode Location (Get Coordinates)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://{{baseUrl}}:5000/api/location/geocode?city=Delhi&country=India",
+              "protocol": "http",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "location",
+                "geocode"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "Delhi"
+                },
+                {
+                  "key": "country",
+                  "value": "India"
+                }
+              ]
+            },
+            "description": "Get latitude and longitude for a city using OpenStreetMap Nominatim API"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/geocode?city=Delhi&country=India",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "location",
+                    "geocode"
+                  ],
+                  "query": [
+                    {
+                      "key": "city",
+                      "value": "Delhi"
+                    },
+                    {
+                      "key": "country",
+                      "value": "India"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Coordinates for Delhi, India fetched successfully\",\n  \"data\": {\n    \"latitude\": 28.6139,\n    \"longitude\": 77.2090,\n    \"displayName\": \"Delhi, India\",\n    \"boundingbox\": [28.4044, 28.8846, 76.8381, 77.3910]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Find Nearby Places",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://{{baseUrl}}:5000/api/location/nearby-places?lat=28.6139&lng=77.2090&type=restaurant",
+              "protocol": "http",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "location",
+                "nearby-places"
+              ],
+              "query": [
+                {
+                  "key": "lat",
+                  "value": "28.6139"
+                },
+                {
+                  "key": "lng",
+                  "value": "77.2090"
+                },
+                {
+                  "key": "type",
+                  "value": "restaurant"
+                }
+              ]
+            },
+            "description": "Find nearby places by type, latitude, and longitude. Type defaults to 'restaurant' if not provided."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/nearby-places?lat=28.6139&lng=77.2090&type=restaurant",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "location",
+                    "nearby-places"
+                  ],
+                  "query": [
+                    {
+                      "key": "lat",
+                      "value": "28.6139"
+                    },
+                    {
+                      "key": "lng",
+                      "value": "77.2090"
+                    },
+                    {
+                      "key": "type",
+                      "value": "restaurant"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Nearby restaurants fetched successfully\",\n  \"data\": {\n    \"placeType\": \"restaurant\",\n    \"latitude\": 28.6139,\n    \"longitude\": 77.2090,\n    \"results\": [\n      {\n        \"name\": \"Restaurant Name\",\n        \"latitude\": 28.6150,\n        \"longitude\": 77.2100,\n        \"displayName\": \"Restaurant Name, Delhi\",\n        \"type\": \"amenity\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reverse Geocode (Get Address)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://{{baseUrl}}:5000/api/location/reverse-geocode?lat=28.6139&lng=77.2090",
+              "protocol": "http",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "location",
+                "reverse-geocode"
+              ],
+              "query": [
+                {
+                  "key": "lat",
+                  "value": "28.6139"
+                },
+                {
+                  "key": "lng",
+                  "value": "77.2090"
+                }
+              ]
+            },
+            "description": "Get address from latitude and longitude using OpenStreetMap Nominatim API"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/location/reverse-geocode?lat=28.6139&lng=77.2090",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "location",
+                    "reverse-geocode"
+                  ],
+                  "query": [
+                    {
+                      "key": "lat",
+                      "value": "28.6139"
+                    },
+                    {
+                      "key": "lng",
+                      "value": "77.2090"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Address fetched successfully\",\n  \"data\": {\n    \"latitude\": 28.6139,\n    \"longitude\": 77.2090,\n    \"address\": {\"city\": \"Delhi\", \"country\": \"India\"},\n    \"displayName\": \"Delhi, India\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1. PARTNER REGISTRATION",
+      "item": [
+        {
+          "name": "Register Partner",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "companyName",
+                  "value": "Tech Solutions Inc",
+                  "type": "text"
+                },
+                {
+                  "key": "ownerName",
+                  "value": "John Doe",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "john@techsolutions.com",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "+1234567890",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "SecurePass123",
+                  "type": "text"
+                },
+                {
+                  "key": "confirmPassword",
+                  "value": "SecurePass123",
+                  "type": "text"
+                },
+                {
+                  "key": "logo",
+                  "description": "Company logo image (optional)",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "profileImage",
+                  "description": "Partner profile image (optional)",
+                  "type": "file",
+                  "value": null
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. PLATFORM ADMIN APPROVAL",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"platformAdminToken\", jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@platform.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Suspend Partner",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}/suspend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "partners",
+                "{{partnerId}}",
+                "suspend"
+              ]
+            },
+            "description": "Suspend a partner account"
+          },
+          "response": []
+        },
+        {
+          "name": "Disable Partner",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}/disable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "partners",
+                "{{partnerId}}",
+                "disable"
+              ]
+            },
+            "description": "Disable a partner account (sets isActive to false)"
+          },
+          "response": []
+        },
+        {
+          "name": "Enable Partner",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}/enable",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "partners",
+                "{{partnerId}}",
+                "enable"
+              ]
+            },
+            "description": "Enable a partner account (sets isActive to true)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Partners (with Filters)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "partners"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING",
+                  "disabled": true
+                },
+                {
+                  "key": "isPending",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "isVerified",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "isSuspended",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "country",
+                  "value": "India",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "Mumbai",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "Tech",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get list of all partners with filtering options:\n- status: PENDING, VERIFIED, or SUSPENDED\n- isPending: true (filters for PENDING status)\n- isVerified: true (filters for VERIFIED status)\n- isSuspended: true (filters for SUSPENDED status)\n- country: Filter by country\n- city: Filter by city\n- search: Search by company name, owner name, or email\n- page: Page number (default 1)\n- limit: Results per page (default 10)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Partner (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"New Tech Company\",\n  \"ownerName\": \"Admin Created Partner\",\n  \"email\": \"partner@example.com\",\n  \"phone\": \"+1234567890\",\n  \"password\": \"SecurePass123\",\n  \"country\": \"India\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Mumbai\",\n  \"gstNumber\": \"27AABCT1234H1Z0\",\n  \"websiteName\": \"www.company.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "partners"
+              ]
+            },
+            "description": "Create a new partner account directly (Platform Admin only). Partner is automatically verified."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Partner (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "partners",
+                "{{partnerId}}"
+              ]
+            },
+            "description": "Delete a partner account and all associated data (providers, services). This action is permanent."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Partner Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{platformAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "partners",
+                "{{partnerId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Partner",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"partnerId\", jsonData.partner._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{platformAdminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/partners/{{partnerId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "partners",
+                "{{partnerId}}",
+                "approve"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. EMAIL VERIFICATION",
+      "item": [
+        {
+          "name": "Verify Partner Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/verify-email/{{verifyToken}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "verify-email",
+                "{{verifyToken}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. PARTNER LOGIN",
+      "item": [
+        {
+          "name": "Login Partner",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"partnerToken\", jsonData.token);",
+                  "    pm.environment.set(\"partnerId\", jsonData.partner._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@techsolutions.com\",\n  \"password\": \"SecurePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4a. FORGET PASSWORD (OTP)",
+      "item": [
+        {
+          "name": "Forget Password - Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@techsolutions.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/forget-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "forget-password"
+              ]
+            },
+            "description": "Send OTP to partner email for password reset. OTP expires in 10 minutes."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@techsolutions.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/partner/forget-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "partner",
+                    "forget-password"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"If an account with this email exists, a password reset OTP has been sent\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Password Reset OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"resetToken\", jsonData.resetToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@techsolutions.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/verify-reset-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "verify-reset-otp"
+              ]
+            },
+            "description": "Verify OTP received in email. Max 3 incorrect attempts allowed."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@techsolutions.com\",\n  \"otp\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/partner/verify-reset-otp",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "partner",
+                    "verify-reset-otp"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"OTP verified successfully\",\n  \"resetToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@techsolutions.com\",\n  \"password\": \"NewSecurePass456\",\n  \"confirmPassword\": \"NewSecurePass456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "reset-password"
+              ]
+            },
+            "description": "Update partner password after OTP verification. Passwords must match and be at least 6 characters."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@techsolutions.com\",\n  \"password\": \"NewSecurePass456\",\n  \"confirmPassword\": \"NewSecurePass456\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/partner/reset-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "partner",
+                    "reset-password"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Password reset successfully. You can now login with your new password.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. PARTNER PROFILE",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile with Location",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"businessName\": \"Tech Solutions Inc Updated\",\n  \"country\": \"India\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Mumbai\",\n  \"gstNumber\": \"27AABCT1234H1Z0\",\n  \"websiteName\": \"www.techsolutions-updated.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "profile"
+              ]
+            },
+            "description": "Update partner details including location (country, state, city), GST number, and website name"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer TOKEN"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"country\": \"India\",\n  \"state\": \"Maharashtra\",\n  \"city\": \"Mumbai\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/partner/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "partner",
+                    "profile"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Partner updated successfully\",\n  \"data\": {\n    \"businessName\": \"Tech Solutions Inc Updated\",\n    \"country\": \"India\",\n    \"state\": \"Maharashtra\",\n    \"city\": \"Mumbai\",\n    \"gstNumber\": \"27AABCT1234H1Z0\",\n    \"websiteName\": \"www.techsolutions-updated.com\",\n    \"email\": \"user@example.com\",\n    \"phone\": \"9876543210\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. PROVIDERS CRUD",
+      "item": [
+        {
+          "name": "Create Provider",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"providerId\", jsonData.provider._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Sarah Johnson\",\n  \"email\": \"sarah@techsolutions.com\",\n  \"phone\": \"+1111111111\",\n  \"specialization\": \"IT Support\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/providers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "providers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Providers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/providers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "providers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Provider",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Sarah Johnson Senior\",\n  \"email\": \"sarah.senior@techsolutions.com\",\n  \"phone\": \"+2222222222\",\n  \"specialization\": \"Senior IT Support\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/providers/{{providerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "providers",
+                "{{providerId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Provider",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/providers/{{providerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "providers",
+                "{{providerId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. SERVICES CRUD",
+      "item": [
+        {
+          "name": "Create Service",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"serviceId\", jsonData.service._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Network Setup Consultation\",\n  \"description\": \"Professional network infrastructure setup and configuration\",\n  \"price\": 299.99,\n  \"duration\": 120\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "services"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Services",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "services"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Service",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Premium Network Setup Consultation\",\n  \"description\": \"Professional premium network infrastructure setup and configuration\",\n  \"price\": 399.99,\n  \"duration\": 180,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/services/{{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "services",
+                "{{serviceId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/services/{{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "services",
+                "{{serviceId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. BOOKINGS",
+      "item": [
+        {
+          "name": "Get Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Bookings (Filtered by Status)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/bookings?status=CONFIRMED",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "bookings"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "CONFIRMED"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Booking Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"bookingId\", jsonData.booking._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{partnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CONFIRMED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/bookings/{{bookingId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "partner",
+                "bookings",
+                "{{bookingId}}",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "platformAdminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "partnerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "partnerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "providerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "serviceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bookingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "verifyToken",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

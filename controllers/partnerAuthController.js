@@ -6,10 +6,12 @@ const {
   generatePartnerToken,
   generateEmailVerificationToken,
   verifyEmailVerificationToken,
+  generatePasswordResetOTP,
 } = require("../utils/tokenUtils")
 const {
   sendPartnerVerificationEmail,
   sendPartnerApprovalEmail,
+  sendPartnerPasswordResetEmail,
 } = require("../utils/partnerEmailUtils")
 
 // Register Partner
@@ -302,6 +304,183 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || "Failed to update profile",
+    })
+  }
+}
+
+// Forget Password - Send OTP to Email
+exports.forgetPassword = async (req, res) => {
+  try {
+    const { email } = req.body
+
+    // Validation
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      })
+    }
+
+    // Find partner by email
+    const partner = await Partner.findOne({ email: email.toLowerCase() })
+    if (!partner) {
+      // Don't reveal if email exists (security best practice)
+      return res.status(200).json({
+        success: true,
+        message: "If an account with this email exists, a password reset OTP has been sent",
+      })
+    }
+
+    // Generate 6-digit OTP
+    const otp = generatePasswordResetOTP()
+
+    // Update partner with OTP
+    partner.passwordResetOTP = otp
+    partner.passwordResetOTPExpires = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+    partner.passwordResetAttempts = 0
+    await partner.save()
+
+    // Send OTP email
+    await sendPartnerPasswordResetEmail(partner.email, partner.companyName, partner.ownerName, otp)
+
+    res.status(200).json({
+      success: true,
+      message: "If an account with this email exists, a password reset OTP has been sent",
+    })
+  } catch (error) {
+    console.error("Forget password error:", error)
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to process forget password request",
+    })
+  }
+}
+
+// Verify OTP - Validate OTP and allow password reset
+exports.verifyPasswordResetOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body
+
+    // Validation
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and OTP are required",
+      })
+    }
+
+    // Find partner
+    const partner = await Partner.findOne({ email: email.toLowerCase() }).select("+passwordResetOTP +passwordResetOTPExpires +passwordResetAttempts")
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found",
+      })
+    }
+
+    // Check if OTP expired
+    if (!partner.passwordResetOTPExpires || partner.passwordResetOTPExpires < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired. Please request a new one",
+      })
+    }
+
+    // Check OTP attempts (max 3 attempts)
+    if (partner.passwordResetAttempts >= 3) {
+      return res.status(400).json({
+        success: false,
+        message: "Too many incorrect attempts. Please request a new OTP",
+      })
+    }
+
+    // Verify OTP
+    if (partner.passwordResetOTP !== otp) {
+      partner.passwordResetAttempts += 1
+      await partner.save()
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      })
+    }
+
+    // OTP verified - Generate temporary token for password reset
+    const resetToken = generatePartnerToken(partner._id, null, partner.email)
+
+    res.json({
+      success: true,
+      message: "OTP verified successfully",
+      resetToken,
+    })
+  } catch (error) {
+    console.error("Verify OTP error:", error)
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to verify OTP",
+    })
+  }
+}
+
+// Reset Password - Update Password with OTP Verification
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, password, confirmPassword } = req.body
+
+    // Validation
+    if (!email || !password || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and both password fields are required",
+      })
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Passwords do not match",
+      })
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
+      })
+    }
+
+    // Find partner
+    const partner = await Partner.findOne({ email: email.toLowerCase() }).select("+passwordResetOTP +passwordResetOTPExpires")
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found",
+      })
+    }
+
+    // Verify OTP still valid (double check)
+    if (!partner.passwordResetOTP || partner.passwordResetOTPExpires < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired or invalid. Please request a new one",
+      })
+    }
+
+    // Update password
+    partner.password = password
+    partner.passwordResetOTP = undefined
+    partner.passwordResetOTPExpires = undefined
+    partner.passwordResetAttempts = 0
+    await partner.save()
+
+    res.json({
+      success: true,
+      message: "Password reset successfully. You can now login with your new password.",
+    })
+  } catch (error) {
+    console.error("Reset password error:", error)
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to reset password",
     })
   }
 }

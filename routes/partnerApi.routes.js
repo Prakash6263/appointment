@@ -19,7 +19,7 @@ const { requireRole } = require("../middleware/role.middleware")
 
 // Register Partner with optional file uploads
 router.post(
-  "/partner/register",
+  "/register",
   upload.fields([
     { name: "logo", maxCount: 1 },
     { name: "profileImage", maxCount: 1 },
@@ -28,36 +28,36 @@ router.post(
 )
 
 // Verify Email - Public verification page route (serves HTML)
-router.get("/partner/verify/:token", emailVerificationPageController.verifyEmailPage)
+router.get("/verify/:token", emailVerificationPageController.verifyEmailPage)
 
 // Verify Email - HTML page endpoint (returns HTML instead of JSON)
-router.get("/partner/verify-email/:token", emailVerificationPageController.verifyEmailPage)
+router.get("/verify-email/:token", emailVerificationPageController.verifyEmailPage)
 
 // Confirm verification from the HTML form
-router.post("/partner/confirm-verify", emailVerificationPageController.confirmVerifyEmail)
+router.post("/confirm-verify", emailVerificationPageController.confirmVerifyEmail)
 
 // Login Partner
-router.post("/partner/login", partnerAuthController.loginPartner)
+router.post("/login", partnerAuthController.loginPartner)
 
 // Forget Password - Send OTP to Email (Public)
 router.post("/partner/forget-password", partnerAuthController.forgetPassword)
 
 // Verify Password Reset OTP (Public)
-router.post("/partner/verify-reset-otp", partnerAuthController.verifyPasswordResetOTP)
+router.post("/verify-reset-otp", partnerAuthController.verifyPasswordResetOTP)
 
 // Reset Password - Update Password with OTP (Public)
-router.post("/partner/reset-password", partnerAuthController.resetPassword)
+router.post("/reset-password", partnerAuthController.resetPassword)
 
 // =====================
 // PARTNER PROTECTED ROUTES
 // =====================
 
 // Get Partner Profile
-router.get("/partner/profile", verifyPartnerToken, partnerAuthController.getProfile)
+router.get("/profile", verifyPartnerToken, partnerAuthController.getProfile)
 
 // Update Partner Profile with optional file uploads
 router.put(
-  "/partner/profile",
+  "/profile",
   verifyPartnerToken,
   upload.fields([
     { name: "logo", maxCount: 1 },

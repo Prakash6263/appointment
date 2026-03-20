@@ -1,8 +1,8 @@
-const ProviderAvailability = require("../models/ProviderAvailability")
+const ProviderAvailability = require("../models/ProviderAvailability");
 const User = require("../models/User")
 
 // Get Provider Availability
-exports.getAvailability = async (req, res) => {
+const getAvailability = async (req, res) => {
   try {
     const { providerId } = req.params
     const { userId, userRole } = req
@@ -62,7 +62,7 @@ exports.getAvailability = async (req, res) => {
 }
 
 // Update Provider Availability
-exports.updateAvailability = async (req, res) => {
+ const updateAvailability = async (req, res) => {
   try {
     const { providerId } = req.params
     const { isOnlineAvailable, weeklySchedule } = req.body
@@ -128,8 +128,114 @@ exports.updateAvailability = async (req, res) => {
   }
 }
 
+// set Provider Availability
+ const setAvailability = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    const { weeklySchedule, isOnlineAvailable } = req.body;
+    const { userId, userRole } = req;
+
+    // Check provider
+    const provider = await User.findById(providerId);
+    if (!provider || provider.role !== "provider") {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found",
+      });
+    }
+
+    // Authorization
+    if (userRole !== "partner_admin" && userId !== providerId) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+
+    // Validate schedule
+    if (!Array.isArray(weeklySchedule)) {
+      return res.status(400).json({
+        success: false,
+        message: "weeklySchedule must be an array",
+      });
+    }
+
+    let availability = await ProviderAvailability.findOne({ providerId });
+
+    if (!availability) {
+      availability = new ProviderAvailability({ providerId });
+    }
+
+    // Update fields
+    if (weeklySchedule) availability.weeklySchedule = weeklySchedule;
+    if (isOnlineAvailable !== undefined) {
+      availability.isOnlineAvailable = isOnlineAvailable;
+    }
+
+    await availability.save();
+
+    res.json({
+      success: true,
+      message: "Availability set successfully",
+      data: availability,
+    });
+  } catch (error) {
+    console.error("Set availability error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to set availability",
+    });
+  }
+};
+
+// delete avalavility Status
+ const deleteAvailability = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    const { userId, userRole } = req;
+
+    // Check provider
+    const provider = await User.findById(providerId);
+    if (!provider || provider.role !== "provider") {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found",
+      });
+    }
+
+    // Authorization
+    if (userRole !== "partner_admin" && userId !== providerId) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+
+    const availability = await ProviderAvailability.findOneAndDelete({
+      providerId,
+    });
+
+    if (!availability) {
+      return res.status(404).json({
+        success: false,
+        message: "Availability not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Availability deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete availability error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete availability",
+    });
+  }
+};
 // Toggle Online Status
-exports.toggleOnlineStatus = async (req, res) => {
+const toggleOnlineStatus = async (req, res) => {
   try {
     const { providerId } = req.params
     const { userId, userRole } = req
@@ -181,7 +287,7 @@ exports.toggleOnlineStatus = async (req, res) => {
 }
 
 // Update Single Day Schedule
-exports.updateDaySchedule = async (req, res) => {
+ const updateDaySchedule = async (req, res) => {
   try {
     const { providerId, day } = req.params
     const { enabled, start, end } = req.body
@@ -247,3 +353,13 @@ exports.updateDaySchedule = async (req, res) => {
     })
   }
 }
+
+
+module.exports = {
+  getAvailability,
+  updateAvailability,
+  setAvailability,
+  deleteAvailability,
+  toggleOnlineStatus,
+  updateDaySchedule
+};

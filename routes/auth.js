@@ -9,6 +9,7 @@ const {
   resetPassword,
   editProfile,
   googleCallback,
+  changePassword,
 } = require("../controllers/authController")
 const {
   handleValidationErrors,

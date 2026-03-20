@@ -5,6 +5,7 @@ const { generateOTP, getOTPExpiration } = require("../utils/otpUtils")
 const jwt = require("jsonwebtoken")
 const fs = require("fs")
 const path = require("path")
+const bcrypt = require("bcryptjs");
 
 // Signup Controller
 exports.signup = async (req, res) => {
@@ -357,6 +358,72 @@ exports.resetPassword = async (req, res) => {
     })
   }
 }
+
+// Change Password
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    // console.log("BODY:", req.body);
+    const userId = req.userId; // 👉 token se aa raha hoga
+
+    // 1. Validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "New password and confirm password do not match",
+      });
+    }
+
+    // 2. Get user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // 3. Compare current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    // 4. Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // 5. Save new password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password updated successfully",
+    });
+
+  } catch (error) {
+    console.error("Change password error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+// module.exports = {
+//   changePassword,
+// };
 
 exports.editProfile = async (req, res) => {
   try {

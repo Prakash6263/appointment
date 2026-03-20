@@ -4,6 +4,7 @@ const { requireRole } = require("../middleware/role.middleware")
 const { ensurePartnerAccess } = require("../middleware/partnerAccess.middleware")
 const { validateLicense } = require("../middleware/license.middleware")
 const providerController = require("../controllers/providerController")
+const { getAvailability, updateAvailability, setAvailability, deleteAvailability } = require("../controllers/availabilityController")
 
 const router = express.Router()
 
@@ -21,20 +22,20 @@ router.get("/providers", providerController.listProviders)
 router.delete("/providers/:providerId", providerController.deactivateProvider)
 
 // Services Management Routes
-router.post("/services", serviceController.createService)
-router.get("/services", serviceController.listServices)
-router.get("/services/:serviceId", serviceController.getService)
-router.put("/services/:serviceId", serviceController.updateService)
-router.delete("/services/:serviceId", serviceController.deactivateService)
+// router.post("/services", serviceController.createService)
+// router.get("/services", serviceController.listServices)
+// router.get("/services/:serviceId", serviceController.getService)
+// router.put("/services/:serviceId", serviceController.updateService)
+// router.delete("/services/:serviceId", serviceController.deactivateService)
 
 // Provider Availability Routes
-router.post("/availability", availabilityController.setAvailability)
-router.get("/availability", availabilityController.getAvailability)
-router.put("/availability/:id", availabilityController.updateAvailability)
-router.delete("/availability/:id", availabilityController.deleteAvailability)
+router.post("/availability", setAvailability)
+router.get("/availability", getAvailability)
+router.put("/availability/:id", updateAvailability)
+router.delete("/availability/:id", deleteAvailability)
 
 // Booking Management 
-router.get("/bookings", bookingController.listBookings)
-router.get("/bookings/:id", bookingController.getBooking)
-router.put("/bookings/:id/status", bookingController.updateBookingStatus)
+// router.get("/bookings", bookingController.listBookings)
+// router.get("/bookings/:id", bookingController.getBooking)
+// router.put("/bookings/:id/status", bookingController.updateBookingStatus)
 module.exports = router

@@ -71,6 +71,37 @@ exports.getUserBookings = async (req, res) => {
 };
 
 
+exports.getUserBookingById = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+console.log(bookingId)
+    const booking = await Booking.findOne({
+      _id: bookingId,
+    })
+      .populate("partnerId")
+      .populate("providerId")
+      .populate("serviceId");
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: booking,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
 /* =====================================================
    CUSTOMER SIDE API
    User booking cancel kar sakta hai

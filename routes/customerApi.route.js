@@ -31,6 +31,12 @@ router.get("/getProvider/:partnerId", verifyToken, requireRole("customer"), getP
 router.post("/createBooking",verifyToken, requireRole("customer"), bookingController.createBooking);
 // Get customer Bookings
 router.get("/userBookings",verifyToken, requireRole("customer"),bookingController.getUserBookings);
+router.get(
+  "/userBookingDetails/:id",
+  verifyToken,
+  requireRole("customer"),
+  bookingController.getUserBookingById
+);
 
 // Change Password
 router.put("/change-password", verifyToken, requireRole("customer"), changePassword);

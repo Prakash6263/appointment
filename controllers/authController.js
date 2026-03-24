@@ -11,7 +11,7 @@ const bcrypt = require("bcryptjs");
 // Signup Controller
 exports.signup = async (req, res) => {
   try {
-    const { email, username, phoneNumber, password, role } = req.body
+    const { name, email, username, phoneNumber, password, role } = req.body
 
     // Check if user already exists
     let user = await User.findOne({ $or: [{ email }, { username }] })
@@ -28,6 +28,7 @@ exports.signup = async (req, res) => {
 
     // Create user object based on role
     const userData = {
+      name,
       email,
       username,
       phoneNumber,

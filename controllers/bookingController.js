@@ -107,6 +107,7 @@ console.log(bookingId)
    User booking cancel kar sakta hai
 ===================================================== */
 exports.cancelBooking = async (req, res) => {
+
   try {
 
     const { id } = req.params;
@@ -137,7 +138,62 @@ exports.cancelBooking = async (req, res) => {
   }
 };
 
+exports.rescheduleBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { bookingDate } = req.body;
 
+    if (!bookingDate) {
+      return res.status(400).json({
+        success: false,
+        message: "New booking date is required",
+      });
+    }
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // ❌ Prevent invalid actions
+    if (booking.status === "cancelled") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot reschedule cancelled booking",
+      });
+    }
+
+    if (booking.status === "completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot reschedule completed booking",
+      });
+    }
+
+    // ✅ Update date
+    booking.bookingDate = bookingDate;
+    booking.status = "pending"; // reset if needed
+
+    await booking.save();
+
+    res.json({
+      success: true,
+      message: "Booking rescheduled successfully",
+      data: booking,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
 /* =====================================================
    PARTNER SIDE API
    Partner apni bookings dekh sakta hai

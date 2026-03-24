@@ -1,8 +1,9 @@
-const mongoose = require("mongoose")
-const bcrypt = require("bcryptjs")
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
+    name: { type: String, required: true },
     email: {
       type: String,
       required: true,
@@ -44,7 +45,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       sparse: true,
     },
-
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+      lowercase: true,
+      trim: true,
+    },
     // OTP / verification
     otp: String,
     otpExpires: Date,
@@ -68,32 +74,32 @@ const userSchema = new mongoose.Schema(
     },
   },
   { timestamps: true },
-)
+);
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next()
+  if (!this.isModified("password")) return next();
   try {
-    const salt = await bcrypt.genSalt(10)
-    this.password = await bcrypt.hash(this.password, salt)
-    next()
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
+});
 
 // Match password method
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password)
-}
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 // JSON response method
 userSchema.methods.toJSON = function () {
-  const user = this.toObject()
-  delete user.password
-  delete user.otp
-  delete user.resetPasswordOtp
-  return user
-}
+  const user = this.toObject();
+  delete user.password;
+  delete user.otp;
+  delete user.resetPasswordOtp;
+  return user;
+};
 
-module.exports = mongoose.model("User", userSchema)
+module.exports = mongoose.model("User", userSchema);

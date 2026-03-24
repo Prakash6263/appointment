@@ -1,60 +1,94 @@
 const express = require("express");
 const router = express.Router();
-
 const { verifyToken } = require("../middleware/auth");
 const { requireRole } = require("../middleware/role.middleware");
-// 👉 import controller
-const bookingController = require("../controllers/bookingController");
 
-const partnerServiceController = require("../controllers/partnerServiceController");
+// 👉 import controllers
+const bookingController = require("../controllers/bookingController");
 const {
   getCustomerServices,
   getServiceById,
   getProvidersByPartnerId,
+  getProviderDetails,
+  getProviderReviews,
+  addProviderReview,
+  createContact,
 } = require("../controllers/customerController");
-const { changePassword } = require("../controllers/authController");
+const { changePassword, getProfile, editProfile } = require("../controllers/authController");
 
-// const { getAllPartners } = require("../controllers/adminPartnerController");
+// =====================CUSTOMER ACCOUNT ===================== //
 
+// Get customer profile
+// router.get("/profile", verifyToken, requireRole("customer"), getProfile);
 
-// =====================CUSTOMER SERVICES ===================== //
+// Edit customer profile (with optional profile image)
+router.put("/edit-profile", verifyToken, requireRole("customer"), editProfile);
 
+// Change password
+// router.put("/change-password", verifyToken, requireRole("customer"), changePassword);
 
-// Get All Services
-router.get("/services",verifyToken,requireRole("customer"),getCustomerServices,);
-// Get  Services By Id
+// =====================SERVICES ===================== //
+
+// Get all services
+router.get("/services", verifyToken, requireRole("customer"), getCustomerServices);
+
+// Get service by ID
 router.get("/services/:id", verifyToken, requireRole("customer"), getServiceById);
-// Get Provider
+
+// Get providers for a specific partner
 router.get("/getProvider/:partnerId", verifyToken, requireRole("customer"), getProvidersByPartnerId);
 
-// Create Booking
-router.post("/createBooking",verifyToken, requireRole("customer"), bookingController.createBooking);
-// Get customer Bookings
-router.get("/userBookings",verifyToken, requireRole("customer"),bookingController.getUserBookings);
-router.get(
-  "/userBookingDetails/:id",
-  verifyToken,
-  requireRole("customer"),
-  bookingController.getUserBookingById
-);
+// Get provider details
+// router.get("/providers/:id", verifyToken, requireRole("customer"), getProviderDetails);
 
-// Change Password
-router.put("/change-password", verifyToken, requireRole("customer"), changePassword);
+// Get reviews of a provider
+// router.get("/providers/:id/reviews", verifyToken, requireRole("customer"), getProviderReviews);
 
-// Get Single Service
-// router.get(
-//   "/services/:id",
-//   verifyToken,
-//   requireRole("customer"),
-//   serviceController.getServiceById
-// )
+// Add a review for a provider
+// router.post("/providers/:id/review", verifyToken, requireRole("customer"), addProviderReview);
 
-// Search Services
-// router.get(
-//   "/services/search",
-//   verifyToken,
-//   requireRole("customer"),
-//   serviceController.searchServices
-// )
+// =====================BOOKINGS ===================== //
+
+// Create a new booking
+router.post("/createBooking", verifyToken, requireRole("customer"), bookingController.createBooking);
+
+// Get all bookings for the logged-in customer
+router.get("/userBookings", verifyToken, requireRole("customer"), bookingController.getUserBookings);
+
+// Get details of a specific booking
+router.get("/userBookingDetails/:id", verifyToken, requireRole("customer"), bookingController.getUserBookingById);
+
+// Cancel a booking
+router.put("/cancelBooking/:id", verifyToken, requireRole("customer"), bookingController.cancelBooking);
+
+// Reschedule a booking
+// router.put("/rescheduleBooking/:id", verifyToken, requireRole("customer"), bookingController.rescheduleBooking);
+
+// =====================PAYMENTS / INVOICES (Optional) ===================== //
+
+// Get payment/invoice details for a booking
+// router.get("/booking/:id/payment", verifyToken, requireRole("customer"), bookingController.getBookingPayment);
+
+// =====================FAVORITES (Optional) ===================== //
+
+// Add service or provider to favorites
+// router.post("/favorites", verifyToken, requireRole("customer"), bookingController.addFavorite);
+
+// Get all favorites of customer
+// router.get("/favorites", verifyToken, requireRole("customer"), bookingController.getFavorites);
+
+// Remove favorite by ID
+// router.delete("/favorites/:id", verifyToken, requireRole("customer"), bookingController.removeFavorite);
+
+// =====================NOTIFICATIONS (Optional) ===================== //
+
+// Get customer notifications
+// router.get("/notifications", verifyToken, requireRole("customer"), bookingController.getNotifications);
+
+// Mark a notification as read
+// router.put("/notifications/:id/read", verifyToken, requireRole("customer"), bookingController.markNotificationRead);
+
+// Create a new booking
+router.post("/createContact", verifyToken, requireRole("customer"), createContact);
 
 module.exports = router;

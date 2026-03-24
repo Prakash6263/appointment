@@ -38,8 +38,8 @@ router.post("/reset-password", resetPasswordValidation, handleValidationErrors, 
 router.put(
   "/edit-profile/:userId",
   upload.single("profileImage"),
-  editProfileValidation,
-  handleValidationErrors,
+  // editProfileValidation,
+  // handleValidationErrors,
   editProfile,
 )
 

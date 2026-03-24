@@ -7,6 +7,7 @@ const fs = require("fs")
 const path = require("path")
 const bcrypt = require("bcryptjs");
 
+
 // Signup Controller
 exports.signup = async (req, res) => {
   try {
@@ -421,17 +422,32 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-// module.exports = {
-//   changePassword,
-// };
+
 
 exports.editProfile = async (req, res) => {
   try {
     const { userId } = req.params
-    const { contact, address, email } = req.body
+    const updates = req.body
+console.log(req.body)
+    // ❌ Fields user should NOT update directly
+    const restrictedFields = [
+      "otp",
+      "otpExpires",
+      "resetPasswordOtp",
+      "resetPasswordOtpExpires",
+      "isEmailVerified",
+      "googleId",
+      "isActive",
+      "_id",
+      "createdAt",
+      "updatedAt",
+    ]
+
+    // Remove restricted fields
+    restrictedFields.forEach(field => delete updates[field])
 
     // Find user
-    const user = await User.findById(userId)
+    const user = await User.findById(userId).select("+password")
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -439,30 +455,44 @@ exports.editProfile = async (req, res) => {
       })
     }
 
-    // Update common fields
-    if (contact) user.contact = contact
-    if (address) user.address = address
-    if (email && email !== user.email) {
-      // Check if new email is already taken
-      const existingUser = await User.findOne({ email })
+    // ✅ Email update with check
+    if (updates.email && updates.email !== user.email) {
+      const existingUser = await User.findOne({ email: updates.email })
       if (existingUser) {
         return res.status(400).json({
           success: false,
           message: "Email already in use",
         })
       }
-      user.email = email
+      user.email = updates.email
     }
 
+    // ✅ Password update (IMPORTANT)
+    if (updates.password) {
+      const salt = await bcrypt.genSalt(10)
+      user.password = await bcrypt.hash(updates.password, salt)
+      delete updates.password
+    }
+
+    // ✅ Update remaining fields dynamically
+    Object.keys(updates).forEach(key => {
+      if (updates[key] !== undefined) {
+        user[key] = updates[key]
+      }
+    })
+
+    // ✅ Profile image update
     if (req.file) {
-      // Delete old profile image if exists
       if (user.profileImage) {
-        const oldImagePath = path.join(__dirname, "../uploads", path.basename(user.profileImage))
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath)
+        const oldPath = path.join(
+          __dirname,
+          "../uploads",
+          path.basename(user.profileImage)
+        )
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath)
         }
       }
-      // Store new image path
       user.profileImage = `/uploads/${req.file.filename}`
     }
 
@@ -471,9 +501,7 @@ exports.editProfile = async (req, res) => {
     res.json({
       success: true,
       message: "Profile updated successfully",
-      data: {
-        user: user.toJSON(),
-      },
+      data: user.toJSON(),
     })
   } catch (error) {
     console.error("Edit profile error:", error)
@@ -483,6 +511,8 @@ exports.editProfile = async (req, res) => {
     })
   }
 }
+
+
 
 exports.googleCallback = async (req, res) => {
   try {

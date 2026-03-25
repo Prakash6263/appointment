@@ -15,6 +15,7 @@ const {
   createContact,
 } = require("../controllers/customerController");
 const { changePassword, getProfile, editProfile } = require("../controllers/authController");
+const { createReview, getServiceReviews, updateReview, deleteReview } = require("../controllers/reviewController");
 
 // =====================CUSTOMER ACCOUNT ===================== //
 
@@ -63,6 +64,22 @@ router.put("/cancelBooking/:id", verifyToken, requireRole("customer"), bookingCo
 
 // Reschedule a booking
 // router.put("/rescheduleBooking/:id", verifyToken, requireRole("customer"), bookingController.rescheduleBooking);
+
+
+
+// =====================REVIEW ===================== //
+// create
+router.post("/createReview",verifyToken, requireRole("customer"), createReview);
+
+// get reviews by service
+router.get("/getReview/:serviceId", getServiceReviews);
+
+// update
+router.put("/update/:id", verifyToken, requireRole("customer"), updateReview);
+
+// delete
+router.delete("/delete/:id", verifyToken, requireRole("customer"), deleteReview);
+
 
 // =====================PAYMENTS / INVOICES (Optional) ===================== //
 

@@ -102,6 +102,58 @@ console.log(bookingId)
   }
 };
 
+// get completed bookings of user for this service
+// controllers/bookingController.js
+
+
+exports.getCompleatedBooking = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { serviceId } = req.query;
+
+    // ✅ validation
+    if (!serviceId) {
+      return res.status(400).json({
+        success: false,
+        message: "serviceId is required",
+      });
+    }
+
+    // ✅ find bookings
+    const bookings = await Booking.find({
+      userId,
+      serviceId,
+      status: "COMPLETED",
+    })
+      .sort({ createdAt: -1 }) // latest first
+      .select("_id serviceId bookingDate status");
+
+    // ✅ no booking case
+    if (!bookings.length) {
+      return res.status(200).json({
+        success: true,
+        message: "No completed bookings found",
+        data: [],
+      });
+    }
+
+    // ✅ success response
+    return res.status(200).json({
+      success: true,
+      count: bookings.length,
+      data: bookings,
+    });
+  } catch (error) {
+    console.error("Get Booking Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
 /* =====================================================
    CUSTOMER SIDE API
    User booking cancel kar sakta hai

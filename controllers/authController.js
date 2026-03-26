@@ -6,7 +6,14 @@ const jwt = require("jsonwebtoken")
 const fs = require("fs")
 const path = require("path")
 const bcrypt = require("bcryptjs");
+const Provider = require("../models/Provider")
+const Partner = require("../models/Partner")
 
+const models = {
+  customer: User,
+  provider: Provider,
+  Partner: Partner,
+};
 
 // Signup Controller
 exports.signup = async (req, res) => {
@@ -182,55 +189,93 @@ exports.resendOTP = async (req, res) => {
 // Login Controller
 exports.login = async (req, res) => {
   try {
-    const { email, password, role } = req.body
+    let { email, password, role } = req.body;
 
-    // Find user
-    const user = await User.findOne({ email, role }).select("+password")
+    // ✅ Basic validation
+    if (!email || !password || !role) {
+      return res.status(400).json({
+        success: false,
+        message: "Email, password and role are required",
+      });
+    }
+
+    // ✅ Normalize data
+    email = email.toLowerCase();
+    role = role.toLowerCase();
+
+    // ✅ Validate role
+    if (!["customer", "provider", "partner"].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role",
+      });
+    }
+
+    // ✅ Get model dynamically
+    const Model = models[role];
+
+    // 🔍 Find user
+    const user = await Model.findOne({ email }).select("+password");
+
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials for this login type",
-      })
+        message: "User not found",
+      });
     }
 
-    // Check email verification
+    // ✅ Email verification check
     if (!user.isEmailVerified) {
       return res.status(403).json({
         success: false,
-        message: "Please verify your email before logging in",
-      })
+        message: "Please verify your email before login",
+      });
     }
 
-    // Check password
-    const isPasswordValid = await user.matchPassword(password)
+    // 🔐 Password check
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials",
-      })
+        message: "Invalid password",
+      });
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ userId: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE || "7d",
-    })
+    // 🎟 Generate JWT
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        email: user.email,
+        role: role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRE || "7d",
+      }
+    );
 
-    res.json({
+    // ❌ Hide password
+    user.password = undefined;
+
+    // ✅ Response
+    return res.status(200).json({
       success: true,
       message: "Login successful",
       data: {
         token,
-        user: user.toJSON(),
+        user,
       },
-    })
+    });
   } catch (error) {
-    console.error("Login error:", error)
-    res.status(500).json({
+    console.error("Login error:", error);
+
+    return res.status(500).json({
       success: false,
       message: "Login failed",
-    })
+    });
   }
-}
+};
 
 exports.forgotPassword = async (req, res) => {
   try {
@@ -424,6 +469,39 @@ exports.changePassword = async (req, res) => {
 };
 
 
+exports.getProfile = async (req, res) => {
+  try {
+    const providerId = req.user.id;
+
+    const provider = await Provider.findOne({
+      _id: providerId,
+      isDeleted: false,
+      status: "ACTIVE",
+    })
+      .populate("services") // optional but useful
+      .select("-__v"); // clean response
+
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile fetched successfully",
+      data: provider,
+    });
+  } catch (error) {
+    console.error("Get profile error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch profile",
+    });
+  }
+};
 
 exports.editProfile = async (req, res) => {
   try {

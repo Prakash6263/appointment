@@ -1,150 +1,85 @@
-const User = require("../models/User")
-const Partner = require("../models/Partner")
+const Booking = require("../models/Booking");
+const Provider = require("../models/Provider");
 
-// Create Provider
-exports.createProvider = async (req, res) => {
+exports.getAllBookings = async (req, res) => {
+  // console.log("getAllBookings",req.userId)
   try {
-    const { userId } = req
-    const { email, password, username, phoneNumber } = req.body
+    const providerId = req.userId;
+// console.log("req.user:", req);
 
-    // Validate fields
-    if (!email || !password || !username) {
-      return res.status(400).json({
-        success: false,
-        message: "Email, password, and username are required",
-      })
-    }
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] })
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email or username already registered",
-      })
-    }
-
-    // Find partner to check provider limit
-    const partner = await Partner.findOne({ ownerUserId: userId })
-    if (!partner) {
-      return res.status(404).json({
-        success: false,
-        message: "Partner not found",
-      })
-    }
-
-    // Check provider limit
-    if (partner.license.usedProviders >= partner.license.providerLimit) {
-      return res.status(400).json({
-        success: false,
-        message: "Provider limit reached for your plan",
-      })
-    }
-
-    // Create provider user
-    const provider = new User({
-      email,
-      password,
-      username,
-      phoneNumber,
-      role: "provider",
-      isEmailVerified: true,
-    })
-
-    await provider.save()
-
-    // Update partner provider count
-    partner.license.usedProviders += 1
-    await partner.save()
-
-    res.status(201).json({
-      success: true,
-      message: "Provider created successfully",
-      data: {
-        providerId: provider._id,
-        email: provider.email,
-        username: provider.username,
-      },
-    })
-  } catch (error) {
-    console.error("Create provider error:", error)
-    res.status(500).json({
-      success: false,
-      message: error.message || "Failed to create provider",
-    })
-  }
-}
-
-// List Providers
-exports.listProviders = async (req, res) => {
-  try {
-    const { userId } = req
-
-    // Find partner
-    const partner = await Partner.findOne({ ownerUserId: userId })
-    if (!partner) {
-      return res.status(404).json({
-        success: false,
-        message: "Partner not found",
-      })
-    }
-
-    // Note: In a production system, you would have a separate way to track
-    // which providers belong to which partner. This is a simplified example.
-    const providers = await User.find({ role: "provider", isActive: true })
-
-    res.json({
-      success: true,
-      message: "Providers retrieved successfully",
-      data: providers,
-    })
-  } catch (error) {
-    console.error("List providers error:", error)
-    res.status(500).json({
-      success: false,
-      message: error.message || "Failed to list providers",
-    })
-  }
-}
-
-// Deactivate Provider
-exports.deactivateProvider = async (req, res) => {
-  try {
-    const { userId } = req
-    const { providerId } = req.params
-
-    // Find provider
-    const provider = await User.findById(providerId)
-    if (!provider || provider.role !== "provider") {
+    // ✅ provider find karo
+    const provider = await Provider.findById(providerId);
+    if (!provider) {
       return res.status(404).json({
         success: false,
         message: "Provider not found",
-      })
+      });
     }
-
-    // Deactivate provider
-    provider.isActive = false
-    await provider.save()
-
-    // Update partner provider count
-    const partner = await Partner.findOne({ ownerUserId: userId })
-    if (partner && partner.license.usedProviders > 0) {
-      partner.license.usedProviders -= 1
-      await partner.save()
-    }
+// console.log("provider", provider);
+    // ✅ partnerId se bookings fetch
+    const bookings = await Booking.find({
+      partnerId: provider.partnerId,
+    })
+      .populate("serviceId", "name price")
+      .populate("providerId", "name")
+      .sort({ createdAt: -1 });
 
     res.json({
       success: true,
-      message: "Provider deactivated successfully",
-      data: {
-        providerId: provider._id,
-      },
-    })
+      count: bookings.length,
+      data: bookings,
+    });
   } catch (error) {
-    console.error("Deactivate provider error:", error)
+    console.error("Get bookings error:", error);
     res.status(500).json({
       success: false,
-      message: error.message || "Failed to deactivate provider",
-    })
+      message: "Failed to fetch bookings",
+    });
   }
-}
+};
+
+exports.getTodayBookings = async (req, res) => {
+  try {
+    const providerId = req.userId;
+
+    const provider = await Provider.findById(providerId);
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found",
+      });
+    }
+
+    // ✅ UTC me aaj ka range
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    // ✅ bookingDate use karo (correct field)
+    const bookings = await Booking.find({
+      partnerId: provider.partnerId,
+      bookingDate: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+    })
+      .populate("serviceId", "name")
+      .populate("providerId", "name")
+      .populate("userId", "name email")
+      .sort({ bookingDate: 1 });
+
+    res.json({
+      success: true,
+      count: bookings.length,
+      data: bookings,
+    });
+  } catch (error) {
+    console.error("Today bookings error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch today bookings",
+    });
+  }
+};

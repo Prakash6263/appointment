@@ -1,7 +1,10 @@
 const Partner = require("../models/Partner")
 const Provider = require("../models/Provider")
 const Plan = require("../models/Plan")
-const User = require("../models/User")
+const User = require("../models/User");
+const bcrypt = require("bcryptjs/dist/bcrypt");
+// const bcrypt = require('bcryptjs');
+const SALT_ROUNDS = 10; // Adjust as needed (10-12 is typical)
 
 // Create Partner
 exports.createPartner = async (req, res) => {
@@ -131,48 +134,92 @@ exports.updatePartner = async (req, res) => {
 }
 
 // Create Provider
+
 exports.createProvider = async (req, res) => {
   try {
-    const { name, email, phone, specialization } = req.body
-
-    // Validation
-    if (!name || !email || !phone || !specialization) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      })
-    }
-
-    // Create provider
-    const provider = new Provider({
-      partnerId: req.partnerId,
+    const {
       name,
       email,
       phone,
+      password,               // ✅ Added password to destructuring
       specialization,
+      services = [],
+    } = req.body;
+
+    // ✅ Basic Validation (now includes password)
+    if (!name || !email || !phone || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email, phone and password are required",
+      });
+    }
+
+    // ✅ Email format validation (basic)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format",
+      });
+    }
+
+    // ✅ Check duplicate email (per partner)
+    const existingProvider = await Provider.findOne({
+      email: email.toLowerCase(),
+      partnerId: req.partnerId,
+      isDeleted: false,
+    });
+
+    if (existingProvider) {
+      return res.status(400).json({
+        success: false,
+        message: "Provider with this email already exists",
+      });
+    }
+
+    // ✅ Hash the password
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    // ✅ Create provider with hashed password
+    const provider = new Provider({
+      partnerId: req.partnerId,
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      phone: phone.trim(),
+      password: hashedPassword,     // ✅ Store hashed password
+      specialization: specialization.trim(),
+      services,
       status: "ACTIVE",
-    })
+    });
 
-    await provider.save()
+    await provider.save();
 
-    // Add provider to partner's providers list
+    // ✅ Add provider to partner
     await Partner.findByIdAndUpdate(req.partnerId, {
       $push: { providers: provider._id },
-    })
+    });
+
+    // ✅ Populate services (optional for response)
+    await provider.populate("services");
+
+    // ⚠️ Avoid sending the password back in the response
+    const providerResponse = provider.toObject();
+    delete providerResponse.password;
 
     res.status(201).json({
       success: true,
       message: "Provider created successfully",
-      provider,
-    })
+      provider: providerResponse,
+    });
   } catch (error) {
-    console.error("Create provider error:", error)
+    console.error("Create provider error:", error);
+
     res.status(500).json({
       success: false,
       message: error.message || "Failed to create provider",
-    })
+    });
   }
-}
+};
 
 // Get All Providers
 exports.getProviders = async (req, res) => {

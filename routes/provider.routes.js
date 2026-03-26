@@ -1,41 +1,45 @@
-const express = require("express")
-const { verifyToken } = require("../middleware/auth")
-const { requireRole } = require("../middleware/role.middleware")
-const { ensurePartnerAccess } = require("../middleware/partnerAccess.middleware")
-const { validateLicense } = require("../middleware/license.middleware")
-const providerController = require("../controllers/providerController")
-const { getAvailability, updateAvailability, setAvailability, deleteAvailability } = require("../controllers/availabilityController")
+const express = require("express");
+const { verifyToken } = require("../middleware/auth");
+const { requireRole } = require("../middleware/role.middleware");
+const { validateLicense } = require("../middleware/license.middleware");
 
-const router = express.Router()
+const providerController = require("../controllers/providerController");
+const bookingController = require("../controllers/bookingController");
 
-// All provider routes require partner_admin role and license validation
-router.use(verifyToken)
-router.use(requireRole("partner_admin"))
-router.use(ensurePartnerAccess)
-router.use(validateLicense)
+const {
+  getAvailability,
+  updateAvailability,
+  setAvailability,
+  deleteAvailability,
+} = require("../controllers/availabilityController");
+const { verifyPartnerToken } = require("../middleware/partnerAuth.middleware");
 
-// Provider Management Routes
-router.post("/providers", providerController.createProvider)
-router.get("/providers", providerController.listProviders)
-// router.get("/providers/:providerId", providerController.getProvider)
-// router.put("/providers/:providerId", providerController.updateProvider)
-router.delete("/providers/:providerId", providerController.deactivateProvider)
+const router = express.Router();
 
-// Services Management Routes
-// router.post("/services", serviceController.createService)
-// router.get("/services", serviceController.listServices)
-// router.get("/services/:serviceId", serviceController.getService)
-// router.put("/services/:serviceId", serviceController.updateService)
-// router.delete("/services/:serviceId", serviceController.deactivateService)
+// ✅ Provider auth middleware
+router.use(verifyToken);
+router.use(requireRole("provider"));
 
-// Provider Availability Routes
-router.post("/availability", setAvailability)
-router.get("/availability", getAvailability)
-router.put("/availability/:id", updateAvailability)
-router.delete("/availability/:id", deleteAvailability)
 
-// Booking Management 
-// router.get("/bookings", bookingController.listBookings)
-// router.get("/bookings/:id", bookingController.getBooking)
-// router.put("/bookings/:id/status", bookingController.updateBookingStatus)
-module.exports = router
+// =====================
+// PROFILE
+// =====================
+// router.get("/getProfile", providerController.getProfile);
+// router.put("/updateProfile", providerController.updateProfile);
+
+// =====================
+// AVAILABILITY
+// =====================
+// router.post("/availability", setAvailability);
+// router.get("/availability", getAvailability);
+// router.put("/availability/:id", updateAvailability);
+// router.delete("/availability/:id", deleteAvailability);
+
+// =====================
+// BOOKINGS
+// =====================
+router.get("/getAllBookings", providerController.getAllBookings);
+router.get("/getTodayBookings", providerController.getTodayBookings);
+
+
+module.exports = router; 

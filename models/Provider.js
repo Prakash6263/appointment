@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const providerSchema = new mongoose.Schema(
   {
@@ -6,30 +6,95 @@ const providerSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Partner",
       required: true,
+      index: true,
     },
+
     name: {
       type: String,
       required: true,
+      trim: true,
     },
+
     email: {
       type: String,
       required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true,
     },
+
+    password: {
+      type: String,
+      required: true,
+    },
+
+    // ✅ Email Verification
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    emailVerificationToken: {
+      type: String,
+      default: null,
+    },
+
+    emailVerificationExpires: {
+      type: Date,
+      default: null,
+    },
+
     phone: {
       type: String,
       required: true,
+      trim: true,
     },
+
     specialization: {
       type: String,
-      required: true,
+      trim: true,
+      index: true,
     },
+
+    services: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Service",
+      },
+    ],
+
+    profileImage: {
+      type: String,
+      default: "",
+    },
+
+    experience: {
+      type: Number,
+      default: 0,
+    },
+
     status: {
       type: String,
       enum: ["ACTIVE", "INACTIVE"],
       default: "ACTIVE",
+      index: true,
+    },
+
+    role: {
+      type: String,
+      enum: ["customer", "provider"],
+      default: "provider",
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
-  { timestamps: true },
-)
+  {
+    timestamps: true,
+  }
+);
 
-module.exports = mongoose.model("Provider", providerSchema)
+module.exports = mongoose.model("Provider", providerSchema);

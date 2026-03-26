@@ -18,12 +18,8 @@ const { requireRole } = require("../middleware/role.middleware")
 // =====================
 
 // Register Partner with optional file uploads
-router.post(
-  "/register",
-  upload.fields([
-    { name: "logo", maxCount: 1 },
-    { name: "profileImage", maxCount: 1 },
-  ]),
+router.post("/register",upload.fields([{ name: "logo", maxCount: 1 },
+  { name: "profileImage", maxCount: 1 },]),
   partnerAuthController.registerPartner,
 )
 
@@ -48,17 +44,14 @@ router.post("/verify-reset-otp", partnerAuthController.verifyPasswordResetOTP)
 // Reset Password - Update Password with OTP (Public)
 router.post("/reset-password", partnerAuthController.resetPassword)
 
-// =====================
-// PARTNER PROTECTED ROUTES
-// =====================
+
+// ===================== PARTNER PROTECTED ROUTES =====================//
 
 // Get Partner Profile
 router.get("/profile", verifyPartnerToken, partnerAuthController.getProfile)
 
 // Update Partner Profile with optional file uploads
-router.put(
-  "/profile",
-  verifyPartnerToken,
+router.put("/profile",verifyPartnerToken,
   upload.fields([
     { name: "logo", maxCount: 1 },
     { name: "profileImage", maxCount: 1 },
@@ -66,47 +59,44 @@ router.put(
   partnerAuthController.updateProfile,
 )
 
-// =====================
-// PROVIDERS CRUD
-// =====================
+
+// ===================== PROVIDERS CRUD =====================//
 
 // Create Provider
-router.post("/partner/providers", verifyPartnerToken, partnerProviderController.createProvider)
+router.post("/providers", verifyPartnerToken, partnerProviderController.createProvider)
 
 // Get All Providers
-router.get("/partner/providers", verifyPartnerToken, partnerProviderController.getProviders)
+router.get("/providers", verifyPartnerToken, partnerProviderController.getProviders)
 
 // Update Provider
-router.put("/partner/providers/:id", verifyPartnerToken, partnerProviderController.updateProvider)
+router.put("/providers/:id", verifyPartnerToken, partnerProviderController.updateProvider)
 
 // Delete Provider
-router.delete("/partner/providers/:id", verifyPartnerToken, partnerProviderController.deleteProvider)
+router.delete("/providers/:id", verifyPartnerToken, partnerProviderController.deleteProvider)
 
-// =====================
-// SERVICES CRUD
-// =====================
+
+// ===================== SERVICES CRUD =====================//
 
 // Create Service
-router.post("/partner/services", verifyPartnerToken, partnerServiceController.createService)
+router.post("/services", verifyPartnerToken, partnerServiceController.createService)
 
 // Get All Services
-router.get("/partner/services", verifyPartnerToken, partnerServiceController.getServices)
+router.get("/services", verifyPartnerToken, partnerServiceController.getServices)
 
 // Update Service
-router.put("/partner/services/:id", verifyPartnerToken, partnerServiceController.updateService)
+router.put("/services/:id", verifyPartnerToken, partnerServiceController.updateService)
 
 // Delete Service
-router.delete("/partner/services/:id", verifyPartnerToken, partnerServiceController.deleteService)
+router.delete("/services/:id", verifyPartnerToken, partnerServiceController.deleteService)
 
-// =====================
-// BOOKINGS
-// =====================
+
+// ===================== BOOKINGS=======================//
 
 // Get All Bookings
-router.get("/partner/bookings", verifyPartnerToken, partnerBookingController.getBookings)
+router.get("/bookings", verifyPartnerToken, partnerBookingController.getBookings)
 
 // Update Booking Status
-router.patch("/partner/bookings/:id/status", verifyPartnerToken, partnerBookingController.updateBookingStatus)
+router.patch("/bookings/:id/status", verifyPartnerToken, partnerBookingController.updateBookingStatus)
 
 // =====================
 // ADMIN PARTNER ROUTES

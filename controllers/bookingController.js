@@ -1,4 +1,5 @@
 const Booking = require("../models/Booking");
+const Provider = require("../models/Provider");
 
 /* =====================================================
    CUSTOMER SIDE API
@@ -251,37 +252,50 @@ exports.rescheduleBooking = async (req, res) => {
    Partner apni bookings dekh sakta hai
    status filter bhi laga sakta hai
 ===================================================== */
-exports.getPartnerBookings = async (req, res) => {
+
+
+exports.getTodayBookings = async (req, res) => {
   try {
-
-    const { partnerId } = req.params;
-    const { status } = req.query;
-
-    let query = { partnerId };
-
-    // Agar status query me diya ho to filter laga do
-    if (status) {
-      query.status = status;
+    const providerId = req.user.id;
+console.log(providerId)
+    const provider = await Provider.findById(providerId);
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found",
+      });
     }
 
-    const bookings = await Booking.find(query)
-      .populate("userId")
-      .populate("serviceId");
+    // ✅ today range
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
-    res.status(200).json({
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const bookings = await Booking.find({
+      partnerId: provider.partnerId,
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+    })
+      .populate("serviceId", "name")
+      .populate("providerId", "name");
+
+    res.json({
       success: true,
+      count: bookings.length,
       data: bookings,
     });
-
   } catch (error) {
+    console.error("Today bookings error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to fetch today bookings",
     });
   }
 };
-
-
 /* =====================================================
    PARTNER SIDE API
    Partner booking confirm karta hai

@@ -40,6 +40,7 @@ router.use(requireRole("provider"));
 // =====================
 router.get("/getAllBookings", providerController.getAllBookings);
 router.get("/getTodayBookings", providerController.getTodayBookings);
+router.get("/bookingById/:id", bookingController.getBookingById);
 
 
 module.exports = router; 

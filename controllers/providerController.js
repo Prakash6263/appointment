@@ -83,3 +83,35 @@ exports.getTodayBookings = async (req, res) => {
     });
   }
 };
+
+
+exports.getBookingById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ✅ Find booking
+    const booking = await Booking.findById(id)
+      .populate("serviceId", "name price")
+      .populate("providerId", "name")
+      .populate("userId", "name email");
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: booking,
+    });
+  } catch (error) {
+    console.error("Get booking by ID error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch booking",
+    });
+  }
+};

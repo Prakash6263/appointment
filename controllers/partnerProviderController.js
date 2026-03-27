@@ -2,9 +2,9 @@ const Partner = require("../models/Partner")
 const Provider = require("../models/Provider")
 const Plan = require("../models/Plan")
 const User = require("../models/User");
-const bcrypt = require("bcryptjs/dist/bcrypt");
-// const bcrypt = require('bcryptjs');
 const SALT_ROUNDS = 10; // Adjust as needed (10-12 is typical)
+const bcrypt = require("bcrypt");
+
 
 // Create Partner
 exports.createPartner = async (req, res) => {
@@ -134,19 +134,36 @@ exports.updatePartner = async (req, res) => {
 }
 
 // Create Provider
-
 exports.createProvider = async (req, res) => {
   try {
-    const {
+    let {
       name,
       email,
       phone,
-      password,               // ✅ Added password to destructuring
-      specialization,
+      password,
+      specialization = "",
       services = [],
     } = req.body;
 
-    // ✅ Basic Validation (now includes password)
+    // ✅ Convert services (form-data fix)
+    if (typeof services === "string") {
+      try {
+        services = JSON.parse(services);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Services must be a valid JSON array",
+        });
+      }
+    }
+
+    // ✅ Trim safely
+    name = name?.trim();
+    email = email?.toLowerCase().trim();
+    phone = phone?.trim();
+    specialization = specialization?.trim();
+
+    // ✅ Validation
     if (!name || !email || !phone || !password) {
       return res.status(400).json({
         success: false,
@@ -154,7 +171,7 @@ exports.createProvider = async (req, res) => {
       });
     }
 
-    // ✅ Email format validation (basic)
+    // ✅ Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -163,9 +180,25 @@ exports.createProvider = async (req, res) => {
       });
     }
 
+    // ✅ Password validation
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters long",
+      });
+    }
+
+    // ✅ Ensure services is array
+    if (!Array.isArray(services)) {
+      return res.status(400).json({
+        success: false,
+        message: "Services must be an array",
+      });
+    }
+
     // ✅ Check duplicate email (per partner)
     const existingProvider = await Provider.findOne({
-      email: email.toLowerCase(),
+      email,
       partnerId: req.partnerId,
       isDeleted: false,
     });
@@ -177,46 +210,51 @@ exports.createProvider = async (req, res) => {
       });
     }
 
-    // ✅ Hash the password
+    // ✅ Handle file upload (Multer)
+    const profileImage = req.files?.profileImage?.[0]?.path || null;
+
+    // ✅ Hash password
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-    // ✅ Create provider with hashed password
-    const provider = new Provider({
+    // ✅ Create provider
+    const provider = await Provider.create({
       partnerId: req.partnerId,
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
-      phone: phone.trim(),
-      password: hashedPassword,     // ✅ Store hashed password
-      specialization: specialization.trim(),
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      specialization,
       services,
+      profileImage,
       status: "ACTIVE",
     });
 
-    await provider.save();
+    // ✅ Update partner
+    await Partner.findByIdAndUpdate(
+      req.partnerId,
+      { $push: { providers: provider._id } },
+      { new: true }
+    );
 
-    // ✅ Add provider to partner
-    await Partner.findByIdAndUpdate(req.partnerId, {
-      $push: { providers: provider._id },
-    });
-
-    // ✅ Populate services (optional for response)
+    // ✅ Populate services (optional)
     await provider.populate("services");
 
-    // ⚠️ Avoid sending the password back in the response
+    // ✅ Remove password from response
     const providerResponse = provider.toObject();
     delete providerResponse.password;
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Provider created successfully",
       provider: providerResponse,
     });
+
   } catch (error) {
     console.error("Create provider error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message || "Failed to create provider",
+      message: "Failed to create provider",
     });
   }
 };
@@ -240,47 +278,183 @@ exports.getProviders = async (req, res) => {
   }
 }
 
-// Update Provider
-exports.updateProvider = async (req, res) => {
+//==========get provider by id=============//
+exports.getProviderById = async (req, res) => {
   try {
-    const { id } = req.params
-    const { name, email, phone, specialization, status } = req.body
+    const { providerId } = req.params;
 
-    // Check if provider belongs to this partner
-    const provider = await Provider.findOne({ _id: id, partnerId: req.partnerId })
+    // console.log("ID:", providerId);
+
+    const provider = await Provider.findOne({
+      _id: providerId,   // ✅ correct
+      // partnerId: req.partnerId, (optional)
+      // isDeleted: false (optional)
+    })
+      .populate("services")
+      .select("-password");
+
     if (!provider) {
       return res.status(404).json({
         success: false,
-        message: "Provider not found or does not belong to this partner",
-      })
+        message: "Provider not found",
+      });
     }
 
-    // Update provider
-    const updatedProvider = await Provider.findByIdAndUpdate(
-      id,
-      {
-        name: name || provider.name,
-        email: email || provider.email,
-        phone: phone || provider.phone,
-        specialization: specialization || provider.specialization,
-        status: status || provider.status,
-      },
-      { new: true, runValidators: true },
-    )
+    return res.status(200).json({
+      success: true,
+      provider,
+    });
 
-    res.json({
+  } catch (error) {
+    console.error("Get provider error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch provider",
+    });
+  }
+};
+// Update Provider
+
+exports.updateProvider = async (req, res) => {
+  // console.log("api called")
+  try {
+    const { providerId } = req.params;
+
+    let {
+      name,
+      email,
+      phone,
+      password,
+      specialization,
+      services,
+      experience,
+      status,
+    } = req.body;
+
+    // ✅ Find provider (ensure belongs to partner)
+    const provider = await Provider.findOne({
+      _id: providerId,
+      partnerId: req.partnerId,
+      isDeleted: false,
+    });
+
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found",
+      });
+    }
+
+    // ✅ Convert services (form-data fix)
+    if (typeof services === "string") {
+      try {
+        services = JSON.parse(services);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Services must be a valid JSON array",
+        });
+      }
+    }
+
+    // ============================
+    // ✅ Update Fields (only if provided)
+    // ============================
+
+    if (name) provider.name = name.trim();
+
+    if (email) {
+      email = email.toLowerCase().trim();
+
+      // ✅ Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid email format",
+        });
+      }
+
+      // ✅ Check duplicate email (exclude current provider)
+      const existing = await Provider.findOne({
+        email,
+        _id: { $ne: providerId },
+        isDeleted: false,
+      });
+
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: "Email already in use",
+        });
+      }
+
+      provider.email = email;
+    }
+
+    if (phone) provider.phone = phone.trim();
+
+    if (specialization !== undefined) {
+      provider.specialization = specialization?.trim();
+    }
+
+    if (Array.isArray(services)) {
+      provider.services = services;
+    }
+
+    if (experience !== undefined) {
+      provider.experience = Number(experience) || 0;
+    }
+
+    if (status && ["ACTIVE", "INACTIVE"].includes(status)) {
+      provider.status = status;
+    }
+
+    // ✅ Password update (optional)
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: "Password must be at least 6 characters long",
+        });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+      provider.password = hashedPassword;
+    }
+
+  // ✅ image fix
+if (req.files?.profileImage?.[0]) {
+  const file = req.files.profileImage[0];
+  provider.profileImage = `/uploads/${file.filename}`;
+}
+
+    // ✅ Save updated provider
+    await provider.save();
+
+    // ✅ Populate services
+    await provider.populate("services");
+
+    // ✅ Remove password from response
+    const responseData = provider.toObject();
+    delete responseData.password;
+
+    return res.status(200).json({
       success: true,
       message: "Provider updated successfully",
-      provider: updatedProvider,
-    })
+      provider: responseData,
+    });
+
   } catch (error) {
-    console.error("Update provider error:", error)
-    res.status(500).json({
+    console.error("Update provider error:", error);
+
+    return res.status(500).json({
       success: false,
-      message: error.message || "Failed to update provider",
-    })
+      message: "Failed to update provider",
+    });
   }
-}
+};
 
 // Delete Provider
 exports.deleteProvider = async (req, res) => {

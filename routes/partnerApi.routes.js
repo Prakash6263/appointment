@@ -63,13 +63,25 @@ router.put("/profile",verifyPartnerToken,
 // ===================== PROVIDERS CRUD =====================//
 
 // Create Provider
-router.post("/providers", verifyPartnerToken, partnerProviderController.createProvider)
+router.post(
+  "/providers",
+  verifyPartnerToken,
+  upload.fields([{ name: "profileImage", maxCount: 1 }]),
+  partnerProviderController.createProvider
+);
 
 // Get All Providers
 router.get("/providers", verifyPartnerToken, partnerProviderController.getProviders)
 
+// Get Providers By Id
+router.get("/providers/:providerId", verifyPartnerToken, partnerProviderController.getProviderById)
 // Update Provider
-router.put("/providers/:id", verifyPartnerToken, partnerProviderController.updateProvider)
+router.put(
+  "/providersUpdate/:providerId",
+  verifyPartnerToken,
+  upload.fields([{ name: "profileImage", maxCount: 1 }]),
+  partnerProviderController.updateProvider
+);
 
 // Delete Provider
 router.delete("/providers/:id", verifyPartnerToken, partnerProviderController.deleteProvider)

@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken")
 
 const verifyPartnerToken = (req, res, next) => {
-  console.log("verifyPartnerToken")
+  // console.log("verifyPartnerToken")
   try {
     const token = req.headers.authorization?.split(" ")[1]
 

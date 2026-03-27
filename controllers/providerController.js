@@ -1,5 +1,8 @@
 const Booking = require("../models/Booking");
 const Provider = require("../models/Provider");
+const bcrypt = require("bcrypt");
+
+const SALT_ROUNDS = 10;
 
 exports.getAllBookings = async (req, res) => {
   // console.log("getAllBookings",req.userId)
@@ -115,3 +118,6 @@ exports.getBookingById = async (req, res) => {
     });
   }
 };
+
+
+

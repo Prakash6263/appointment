@@ -5,6 +5,7 @@ const { validateLicense } = require("../middleware/license.middleware");
 
 const providerController = require("../controllers/providerController");
 const bookingController = require("../controllers/bookingController");
+const partnerProviderController = require("../controllers/partnerProviderController")
 
 const {
   getAvailability,
@@ -13,6 +14,7 @@ const {
   deleteAvailability,
 } = require("../controllers/availabilityController");
 const { verifyPartnerToken } = require("../middleware/partnerAuth.middleware");
+const upload = require("../middleware/multer");
 
 const router = express.Router();
 
@@ -41,6 +43,13 @@ router.use(requireRole("provider"));
 router.get("/getAllBookings", providerController.getAllBookings);
 router.get("/getTodayBookings", providerController.getTodayBookings);
 router.get("/bookingById/:id", bookingController.getBookingById);
+
+router.put(
+  "/providers/:providerId",
+  verifyToken, // common middleware (partner + provider)
+  upload.fields([{ name: "profileImage", maxCount: 1 }]),
+  partnerProviderController.updateProvider
+);
 
 
 module.exports = router; 

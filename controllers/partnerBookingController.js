@@ -15,7 +15,7 @@ exports.getBookings = async (req, res) => {
 
     const bookings = await Booking.find(query)
       .populate("providerId", "name email phone")
-      .populate("userId", "email username")
+      .populate("userId", "email username phoneNumber")
       .populate("serviceId", "name price duration")
       .sort({ createdAt: -1 })
 

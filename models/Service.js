@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const serviceSchema = new mongoose.Schema(
   {
@@ -23,12 +23,21 @@ const serviceSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
     isActive: {
       type: Boolean,
       default: true,
     },
   },
   { timestamps: true },
-)
+);
 
-module.exports = mongoose.model("Service", serviceSchema)
+module.exports = mongoose.model("Service", serviceSchema);

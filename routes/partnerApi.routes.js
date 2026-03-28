@@ -95,6 +95,9 @@ router.post("/services", verifyPartnerToken, partnerServiceController.createServ
 // Get All Services
 router.get("/services", verifyPartnerToken, partnerServiceController.getServices)
 
+// Get  Services ById
+router.get("/services/:id", verifyPartnerToken, partnerServiceController.getServiceById)
+
 // Update Service
 router.put("/services/:id", verifyPartnerToken, partnerServiceController.updateService)
 

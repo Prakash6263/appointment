@@ -10,12 +10,11 @@ const {
   getServiceById,
   getProvidersByPartnerId,
   getProviderDetails,
-  getProviderReviews,
-  addProviderReview,
+ addProviderReview,
   createContact,
 } = require("../controllers/customerController");
 const { changePassword, getProfile, editProfile } = require("../controllers/authController");
-const { createReview, getServiceReviews, updateReview, deleteReview } = require("../controllers/reviewController");
+const { createReview, getServiceReviews, updateReview, deleteReview, getProviderReviews } = require("../controllers/reviewController");
 
 // =====================CUSTOMER ACCOUNT ===================== //
 
@@ -75,7 +74,10 @@ router.put("/cancelBooking/:id", verifyToken, requireRole("customer"), bookingCo
 router.post("/createReview",verifyToken, requireRole("customer"), createReview);
 
 // get reviews by service
-router.get("/getReview/:serviceId", getServiceReviews);
+router.get("/getServiceReview/:serviceId", getServiceReviews);
+
+// get reviews by Provider Id
+router.get("/getProviderReview/:providerId", getProviderReviews);
 
 // update
 router.put("/update/:id", verifyToken, requireRole("customer"), updateReview);

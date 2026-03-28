@@ -145,7 +145,7 @@ exports.createProvider = async (req, res) => {
       services = [],
     } = req.body;
 
-    // ✅ Convert services (form-data fix)
+    // ================= SERVICES PARSE =================
     if (typeof services === "string") {
       try {
         services = JSON.parse(services);
@@ -157,13 +157,13 @@ exports.createProvider = async (req, res) => {
       }
     }
 
-    // ✅ Trim safely
+    // ================= TRIM =================
     name = name?.trim();
     email = email?.toLowerCase().trim();
     phone = phone?.trim();
     specialization = specialization?.trim();
 
-    // ✅ Validation
+    // ================= VALIDATION =================
     if (!name || !email || !phone || !password) {
       return res.status(400).json({
         success: false,
@@ -171,7 +171,7 @@ exports.createProvider = async (req, res) => {
       });
     }
 
-    // ✅ Email validation
+    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -180,7 +180,7 @@ exports.createProvider = async (req, res) => {
       });
     }
 
-    // ✅ Password validation
+    // Password validation
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
@@ -188,7 +188,7 @@ exports.createProvider = async (req, res) => {
       });
     }
 
-    // ✅ Ensure services is array
+    // Services must be array
     if (!Array.isArray(services)) {
       return res.status(400).json({
         success: false,
@@ -196,7 +196,7 @@ exports.createProvider = async (req, res) => {
       });
     }
 
-    // ✅ Check duplicate email (per partner)
+    // ================= DUPLICATE CHECK =================
     const existingProvider = await Provider.findOne({
       email,
       partnerId: req.partnerId,
@@ -210,13 +210,13 @@ exports.createProvider = async (req, res) => {
       });
     }
 
-    // ✅ Handle file upload (Multer)
-    const profileImage = req.files?.profileImage?.[0]?.path || null;
+    // ================= FILE UPLOAD =================
+    const profileImage = req.files?.profileImage?.[0]?.path || "";
 
-    // ✅ Hash password
+    // ================= HASH PASSWORD =================
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-    // ✅ Create provider
+    // ================= CREATE PROVIDER =================
     const provider = await Provider.create({
       partnerId: req.partnerId,
       name,
@@ -227,19 +227,23 @@ exports.createProvider = async (req, res) => {
       services,
       profileImage,
       status: "ACTIVE",
+
+      // ⭐ IMPORTANT (ensure always present)
+      averageRating: 0,
+      totalReviews: 0,
     });
 
-    // ✅ Update partner
+    // ================= UPDATE PARTNER =================
     await Partner.findByIdAndUpdate(
       req.partnerId,
       { $push: { providers: provider._id } },
       { new: true }
     );
 
-    // ✅ Populate services (optional)
+    // ================= POPULATE =================
     await provider.populate("services");
 
-    // ✅ Remove password from response
+    // ================= CLEAN RESPONSE =================
     const providerResponse = provider.toObject();
     delete providerResponse.password;
 
@@ -255,6 +259,7 @@ exports.createProvider = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to create provider",
+      error: error.message,
     });
   }
 };

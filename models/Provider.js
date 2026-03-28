@@ -73,7 +73,15 @@ const providerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
 
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
     status: {
       type: String,
       enum: ["ACTIVE", "INACTIVE"],
@@ -94,7 +102,7 @@ const providerSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model("Provider", providerSchema);

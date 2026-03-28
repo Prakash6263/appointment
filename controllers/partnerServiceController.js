@@ -71,6 +71,41 @@ exports.getServices = async (req, res) => {
   }
 }
 
+// Get  Services ById
+exports.getServiceById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ✅ Find service by ID + partner check
+    const service = await Service.findOne({
+      _id: id,
+      partnerId: req.partnerId,
+    });
+// console.log("service",service)
+    // ❌ Not found
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+
+    // ✅ Success
+    return res.json({
+      success: true,
+      service,
+    });
+
+  } catch (error) {
+    console.error("Get service by ID error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get service",
+    });
+  }
+};
+
 // Update Service
 exports.updateService = async (req, res) => {
   try {

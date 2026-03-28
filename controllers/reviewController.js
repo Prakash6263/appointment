@@ -2,32 +2,36 @@
 
 const Booking = require("../models/Booking");
 const Review = require("../models/Review");
+const updateProviderRating = require("../utils/updateProviderRating");
 const updateServiceRating = require("../utils/updateServiceRating");
 
 exports.createReview = async (req, res) => {
   try {
-    const { serviceId, bookingId, rating, comment } = req.body;
-    const userId = req.userId; // coming from auth middleware
+    const { serviceId, bookingId, ratingService, ratingProvider, comment } = req.body;
+    const userId = req.userId;
 
     // ================= VALIDATIONS =================
-
-    // required fields
-    if (!serviceId || !bookingId || !rating) {
+    if (!serviceId || !bookingId || !ratingService || !ratingProvider) {
       return res.status(400).json({
-        message: "serviceId, bookingId and rating are required",
+        message: "serviceId, bookingId and both rating are required",
       });
     }
 
-    // rating validation
-    if (rating < 1 || rating > 5) {
+    if (ratingService < 1 || ratingService > 5) {
       return res.status(400).json({
-        message: "Rating must be between 1 and 5",
+        message: "ratingService must be between 1 and 5",
+      });
+    }
+
+     if (ratingProvider < 1 || ratingProvider > 5) {
+      return res.status(400).json({
+        message: "ratingProvider must be between 1 and 5",
       });
     }
 
     // ================= FIND BOOKING =================
     const bookingData = await Booking.findById(bookingId);
-// const bookingData = await Booking.findOne({ _id: bookingId });
+
     if (!bookingData) {
       return res.status(404).json({
         message: "Booking not found",
@@ -35,7 +39,6 @@ exports.createReview = async (req, res) => {
     }
 
     // ================= AUTH CHECK =================
-
     if (bookingData.userId.toString() !== userId) {
       return res.status(403).json({
         message: "Not authorized",
@@ -43,7 +46,6 @@ exports.createReview = async (req, res) => {
     }
 
     // ================= STATUS CHECK =================
-
     if (bookingData.status !== "COMPLETED") {
       return res.status(400).json({
         message: "You can review only after booking is completed",
@@ -51,7 +53,6 @@ exports.createReview = async (req, res) => {
     }
 
     // ================= SERVICE MATCH =================
-
     if (bookingData.serviceId.toString() !== serviceId) {
       return res.status(400).json({
         message: "Service mismatch for this booking",
@@ -59,7 +60,6 @@ exports.createReview = async (req, res) => {
     }
 
     // ================= DUPLICATE CHECK =================
-
     const existingReview = await Review.findOne({
       user: userId,
       booking: bookingId,
@@ -71,28 +71,31 @@ exports.createReview = async (req, res) => {
       });
     }
 
-    // ================= CREATE REVIEW =================
+    // ================= GET PROVIDER =================
+    const providerId = bookingData.providerId;
 
-    const review = await Review.create({
-      user: userId,
-      service: serviceId,
-      booking: bookingId,
-      rating,
-      comment,
-    });
+    // ================= CREATE REVIEW =================
+const review = await Review.create({
+  user: userId,
+  provider: bookingData.providerId,
+  service: serviceId,
+  booking: bookingId,
+  ratingService,
+  ratingProvider,
+  comment,
+});
 
     // ================= UPDATE SERVICE RATING =================
-
     await updateServiceRating(serviceId);
 
-    // ================= OPTIONAL: UPDATE BOOKING =================
-    // (recommended for frontend control)
+    // ================= UPDATE PROVIDER RATING =================
+    await updateProviderRating(providerId);
 
+    // ================= UPDATE BOOKING =================
     bookingData.isReviewed = true;
     await bookingData.save();
 
     // ================= RESPONSE =================
-
     return res.status(201).json({
       success: true,
       message: "Review added successfully",
@@ -113,14 +116,73 @@ exports.createReview = async (req, res) => {
 exports.getServiceReviews = async (req, res) => {
   try {
     const { serviceId } = req.params;
+    const mongoose = require("mongoose");
 
+    // ✅ Validate ID
+    if (!mongoose.Types.ObjectId.isValid(serviceId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid service ID",
+      });
+    }
+
+    // ✅ Fetch reviews with user + provider
     const reviews = await Review.find({ service: serviceId })
       .populate("user", "name")
+      .populate("provider", "name") // ⭐ IMPORTANT
       .sort({ createdAt: -1 });
 
-    res.json(reviews);
+    // ✅ Response
+    return res.json({
+      success: true,
+      count: reviews.length,
+      reviews,
+    });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Get service reviews error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get reviews",
+    });
+  }
+};
+
+// ✅ GET REVIEWS OF Provider 
+exports.getProviderReviews = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    const mongoose = require("mongoose");
+
+    // ✅ Validate ID
+    if (!mongoose.Types.ObjectId.isValid(providerId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid provider ID",
+      });
+    }
+
+    // ✅ Fetch reviews (by provider)
+    const reviews = await Review.find({ provider: providerId })
+      .populate("user", "name")       // 👤 reviewer
+      .populate("service", "name")    // 🛠 service name
+      .sort({ createdAt: -1 });
+
+    // ✅ Response
+    return res.json({
+      success: true,
+      count: reviews.length,
+      reviews,
+    });
+
+  } catch (error) {
+    console.error("Get provider reviews error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get reviews",
+    });
   }
 };
 

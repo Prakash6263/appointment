@@ -14,16 +14,26 @@ const reviewSchema = new mongoose.Schema(
       ref: "Service",
       required: true,
     },
+    provider: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Provider",
+  required: true,
+},
     booking: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Booking",
       required: true,
     },
-    rating: {
+     // ⭐ separate ratings
+    ratingService: {
       type: Number,
       min: 1,
       max: 5,
-      required: true,
+    },
+    ratingProvider: {
+      type: Number,
+      min: 1,
+      max: 5,
     },
     comment: {
       type: String,

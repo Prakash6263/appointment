@@ -1,3 +1,4 @@
+const Partner = require("../models/Partner")
 const Provider = require("../models/Provider")
 const Service = require("../models/Service")
 
@@ -23,6 +24,40 @@ const getCustomerServices = async (req, res) => {
   }
 }
 
+const getServicesByCity = async (req, res) => {
+  try {
+    const { city } = req.query;
+
+    if (!city) {
+      return res.status(400).json({
+        success: false,
+        message: "City is required",
+      });
+    }
+
+    // ✅ Step 1: find partners in that city
+    const partners = await Partner.find({ city });
+
+    const partnerIds = partners.map((p) => p._id);
+
+    // ✅ Step 2: find services of those partners
+    const services = await Service.find({
+      partnerId: { $in: partnerIds },
+      isActive: true,
+    }).populate("partnerId"); // optional (for company name etc)
+
+    res.json({
+      success: true,
+      data: services,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 // =============================
 // Get Service By ID
 // =============================
@@ -33,6 +68,7 @@ const getServiceById = async (req, res) => {
 
     const service = await Service.findById(id)
       .populate("partnerId", "name email phone")
+
 
     if (!service) {
       return res.status(404).json({
@@ -119,6 +155,7 @@ const createContact = async (req, res) => {
 
 module.exports = {
   getCustomerServices,
+  getServicesByCity,
   getServiceById,
   getProvidersByPartnerId,
   createContact

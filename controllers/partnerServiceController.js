@@ -4,53 +4,73 @@ const Service = require("../models/Service")
 // Create Service
 exports.createService = async (req, res) => {
   try {
-    const { name, description, price, duration } = req.body
-
-    // Validation
-    if (!name || !description || price === undefined || !duration) {
+    const { name, description, price, category, duration } = req.body;
+console.log("req.file", req.file)
+    // ================= VALIDATION =================
+    if (!name || !description || price === undefined || !category || !duration) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
-      })
+      });
     }
 
     if (price < 0 || duration < 0) {
       return res.status(400).json({
         success: false,
         message: "Price and duration must be positive numbers",
-      })
+      });
     }
 
-    // Create service
+    // ================= IMAGE HANDLING =================
+    // Agar multer use kar rahe ho
+    let imageUrl = "";
+
+    if (req.file) {
+      // local upload
+      imageUrl = `/uploads/${req.file.filename}`;
+
+      // 👉 If using Cloudinary (optional future)
+      // imageUrl = req.file.path;
+    } else {
+      // default image
+      imageUrl = "https://via.placeholder.com/300x200?text=Service";
+    }
+
+    // ================= CREATE SERVICE =================
     const service = new Service({
       partnerId: req.partnerId,
       name,
       description,
       price,
+      category,
       duration,
+      image: imageUrl, // ✅ NEW FIELD
       isActive: true,
-    })
+    });
 
-    await service.save()
+    await service.save();
 
-    // Add service to partner's services list
+    // ================= UPDATE PARTNER =================
     await Partner.findByIdAndUpdate(req.partnerId, {
       $push: { services: service._id },
-    })
+    });
 
+    // ================= RESPONSE =================
     res.status(201).json({
       success: true,
       message: "Service created successfully",
       service,
-    })
+    });
+
   } catch (error) {
-    console.error("Create service error:", error)
+    console.error("Create service error:", error);
+
     res.status(500).json({
       success: false,
       message: error.message || "Failed to create service",
-    })
+    });
   }
-}
+};
 
 // Get All Services
 exports.getServices = async (req, res) => {

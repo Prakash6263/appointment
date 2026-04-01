@@ -32,6 +32,7 @@ const createPlatformAdmin = async () => {
 
     // Create platform admin
     const admin = new User({
+      name: "Platform Admin",
       email: adminEmail,
       password: adminPassword,
       role: "platform_admin",

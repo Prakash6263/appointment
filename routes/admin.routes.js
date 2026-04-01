@@ -10,9 +10,10 @@ router.use(verifyToken)
 router.use(requireRole("platform_admin"))
 
 // Plan Management Routes
-router.post("/plans", planController.createPlan)
-router.put("/plans/:id", planController.updatePlan)
-router.get("/plans", planController.listPlans)
-router.get("/plans/:id", planController.getPlanById)
+router.post("/createPlans", verifyToken, requireRole("platform_admin"), planController.createPlan)
+router.put("/plans/:id", verifyToken, requireRole("platform_admin"), planController.updatePlan)
+router.get("/plans", verifyToken, requireRole("platform_admin"), planController.listPlans)
+router.get("/plans/:id", verifyToken, requireRole("platform_admin"), planController.getPlanById)
+router.delete("/plans/:id", verifyToken, requireRole("platform_admin"), planController.deletePlan); 
 
 module.exports = router

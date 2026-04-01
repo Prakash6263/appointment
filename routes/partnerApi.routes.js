@@ -63,25 +63,16 @@ router.put("/profile",verifyPartnerToken,
 // ===================== PROVIDERS CRUD =====================//
 
 // Create Provider
-router.post(
-  "/providers",
-  verifyPartnerToken,
-  upload.fields([{ name: "profileImage", maxCount: 1 }]),
-  partnerProviderController.createProvider
-);
+router.post("/providers",verifyPartnerToken,upload.fields([{ name: "profileImage", maxCount: 1 }]),partnerProviderController.createProvider);
 
 // Get All Providers
 router.get("/providers", verifyPartnerToken, partnerProviderController.getProviders)
 
 // Get Providers By Id
 router.get("/providers/:providerId", verifyPartnerToken, partnerProviderController.getProviderById)
+
 // Update Provider
-router.put(
-  "/providersUpdate/:providerId",
-  verifyPartnerToken,
-  upload.fields([{ name: "profileImage", maxCount: 1 }]),
-  partnerProviderController.updateProvider
-);
+router.put("/providersUpdate/:providerId",verifyPartnerToken,upload.fields([{ name: "profileImage", maxCount: 1 }]),partnerProviderController.updateProvider);
 
 // Delete Provider
 router.delete("/providers/:id", verifyPartnerToken, partnerProviderController.deleteProvider)
@@ -90,7 +81,7 @@ router.delete("/providers/:id", verifyPartnerToken, partnerProviderController.de
 // ===================== SERVICES CRUD =====================//
 
 // Create Service
-router.post("/services", verifyPartnerToken, partnerServiceController.createService)
+router.post("/services",verifyPartnerToken, upload.single("image"), partnerServiceController.createService)
 
 // Get All Services
 router.get("/services", verifyPartnerToken, partnerServiceController.getServices)
@@ -113,10 +104,8 @@ router.get("/bookings", verifyPartnerToken, partnerBookingController.getBookings
 // Update Booking Status
 router.patch("/bookings/:id/status", verifyPartnerToken, partnerBookingController.updateBookingStatus)
 
-// =====================
-// ADMIN PARTNER ROUTES
-// =====================
 
+// =====================ADMIN PARTNER ROUTES========================//
 // Get All Partners
 router.get("/admin/partners", verifyToken, requireRole("platform_admin"), adminPartnerController.getAllPartners)
 

@@ -23,6 +23,21 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB connection error:", err))
 
+const Service = require("./models/Service"); // ✅ import
+
+async function updateCategory() {
+  try {
+    await Service.updateMany(
+      { category: { $exists: false } },
+      { $set: { category: "General" } }
+    );
+
+    console.log("✅ Categories added");
+  } catch (err) {
+    console.error("❌ Error updating categories:", err);
+  }
+}
+updateCategory()
 app.use("/api", routes)
 
 // Health check

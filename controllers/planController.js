@@ -122,7 +122,6 @@ exports.updatePlan = async (req, res) => {
 exports.listPlans = async (req, res) => {
   try {
     const plans = await Plan.find({ isActive: true }).sort({ createdAt: -1 })
-
     res.json({
       success: true,
       message: "Plans retrieved successfully",
@@ -163,3 +162,45 @@ exports.getPlanById = async (req, res) => {
     })
   }
 }
+
+
+exports.deletePlan = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ✅ check plan exists
+    const plan = await Plan.findById(id);
+
+    if (!plan) {
+      return res.status(404).json({
+        success: false,
+        message: "Plan not found",
+      });
+    }
+
+    // ⚠️ OPTIONAL: check if plan is in use
+    // const isUsed = await User.exists({ planId: id });
+    // if (isUsed) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Plan is in use, cannot delete",
+    //   });
+    // }
+
+    // ✅ delete
+    await Plan.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: "Plan deleted successfully",
+    });
+
+  } catch (error) {
+    console.error("Delete plan error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete plan",
+    });
+  }
+};

@@ -23,6 +23,24 @@ const serviceSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    image: {
+      type: String,
+      default: "",
+    },
+    category: {
+  type: String,
+  required: true,
+  enum: [
+    "Fitness Center",
+    "Barber Shop",
+    "Technology",
+    "Doctor",
+    "Lawyer",
+    "Plumber",
+    "Cleaner",
+    "Writer"
+  ]
+},
     averageRating: {
       type: Number,
       default: 0,

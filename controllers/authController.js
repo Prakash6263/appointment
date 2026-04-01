@@ -10,9 +10,11 @@ const Provider = require("../models/Provider")
 const Partner = require("../models/Partner")
 
 const models = {
+  platform_admin: User,
   customer: User,
   provider: Provider,
   Partner: Partner,
+  
 };
 
 // Signup Controller
@@ -188,6 +190,7 @@ exports.resendOTP = async (req, res) => {
 
 // Login Controller
 exports.login = async (req, res) => {
+  console.log("api called",req.body)
   try {
     let { email, password, role } = req.body;
 
@@ -204,7 +207,7 @@ exports.login = async (req, res) => {
     role = role.toLowerCase();
 
     // ✅ Validate role
-    if (!["customer", "provider", "partner"].includes(role)) {
+    if (!["customer", "provider", "partner","platform_admin"].includes(role)) {
       return res.status(400).json({
         success: false,
         message: "Invalid role",

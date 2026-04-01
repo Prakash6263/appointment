@@ -12,6 +12,7 @@ const {
   getProviderDetails,
  addProviderReview,
   createContact,
+  getServicesByCity,
 } = require("../controllers/customerController");
 const { changePassword, getProfile, editProfile } = require("../controllers/authController");
 const { createReview, getServiceReviews, updateReview, deleteReview, getProviderReviews } = require("../controllers/reviewController");
@@ -31,6 +32,9 @@ router.put("/edit-profile", verifyToken, requireRole("customer"), editProfile);
 
 // Get all services
 router.get("/services", verifyToken, requireRole("customer"), getCustomerServices);
+
+// Get services by city
+router.get("/services/city", verifyToken, requireRole("customer"), getServicesByCity);
 
 // Get service by ID
 router.get("/services/:id", verifyToken, requireRole("customer"), getServiceById);

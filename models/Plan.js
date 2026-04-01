@@ -5,7 +5,7 @@ const planSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      enum: ["Free", "Starter", "Pro", "Enterprise"],
+      enum: ["Free", "Starter", "Pro", "Enterprise","Enterprise yearly"],
       unique: true,
     },
     shortId: {
@@ -25,7 +25,7 @@ const planSchema = new mongoose.Schema(
     },
     billingCycle: {
       type: String,
-      enum: ["MONTHLY", "YEARLY"],
+      enum: ["monthly", "yearly"],
       required: true,
     },
     customerLimit: {

@@ -95,6 +95,9 @@ router.put("/services/:id", verifyPartnerToken, partnerServiceController.updateS
 // Delete Service
 router.delete("/services/:id", verifyPartnerToken, partnerServiceController.deleteService)
 
+router.patch("/partner/availability",verifyToken,requireRole("partner"), partnerServiceController.setAvailability
+);
+
 
 // ===================== BOOKINGS=======================//
 

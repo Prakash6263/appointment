@@ -5,7 +5,7 @@ const Service = require("../models/Service")
 exports.createService = async (req, res) => {
   try {
     const { name, description, price, category, duration } = req.body;
-console.log("req.file", req.file)
+// console.log("req.file", req.file)
     // ================= VALIDATION =================
     if (!name || !description || price === undefined || !category || !duration) {
       return res.status(400).json({
@@ -217,3 +217,25 @@ exports.deleteService = async (req, res) => {
     })
   }
 }
+
+// Delete Service
+exports.setAvailability = async (req, res) => {
+  try {
+    const partnerId = req.user.id; // from token
+    const { availability } = req.body;
+
+    const partner = await Partner.findByIdAndUpdate(
+      partnerId,
+      { availability },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: partner.availability,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

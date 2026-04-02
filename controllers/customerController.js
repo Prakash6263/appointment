@@ -1,7 +1,7 @@
 const Partner = require("../models/Partner")
 const Provider = require("../models/Provider")
 const Service = require("../models/Service")
-
+const Contact = require("../models/Contact");
 // =============================
 // Get All Services (Customer)
 // =============================
@@ -126,7 +126,7 @@ const getProvidersByPartnerId = async (req, res) => {
 }
 
 // controllers/contactController.js
-const Contact = require("../models/Contact");
+
 
 const createContact = async (req, res) => {
   try {
@@ -152,6 +152,7 @@ const createContact = async (req, res) => {
     });
   }
 };
+
 
 module.exports = {
   getCustomerServices,

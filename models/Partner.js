@@ -1,5 +1,5 @@
-const mongoose = require("mongoose")
-const bcrypt = require("bcryptjs")
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const partnerSchema = new mongoose.Schema(
   {
@@ -78,6 +78,28 @@ const partnerSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    availability: [
+      {
+        day: {
+          type: String,
+          enum: [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+          ],
+        },
+        isAvailable: {
+          type: Boolean,
+          default: false,
+        },
+        startTime: String, // "09:00"
+        endTime: String, // "18:00"
+      },
+    ],
     license: {
       planId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -151,35 +173,35 @@ const partnerSchema = new mongoose.Schema(
     },
   },
   { timestamps: true },
-)
+);
 
 // Hash password before saving
 partnerSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next()
+  if (!this.isModified("password")) return next();
   try {
-    const salt = await bcrypt.genSalt(10)
-    this.password = await bcrypt.hash(this.password, salt)
-    next()
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
+});
 
 // Match password method
 partnerSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password)
-}
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 // JSON response method
 partnerSchema.methods.toJSON = function () {
-  const partner = this.toObject()
-  delete partner.password
-  delete partner.emailVerificationToken
-  delete partner.emailVerificationTokenExpires
-  delete partner.passwordResetOTP
-  delete partner.passwordResetOTPExpires
-  delete partner.passwordResetAttempts
-  return partner
-}
+  const partner = this.toObject();
+  delete partner.password;
+  delete partner.emailVerificationToken;
+  delete partner.emailVerificationTokenExpires;
+  delete partner.passwordResetOTP;
+  delete partner.passwordResetOTPExpires;
+  delete partner.passwordResetAttempts;
+  return partner;
+};
 
-module.exports = mongoose.model("Partner", partnerSchema)
+module.exports = mongoose.model("Partner", partnerSchema);

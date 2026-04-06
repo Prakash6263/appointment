@@ -25,19 +25,20 @@ mongoose
 
 const Service = require("./models/Service"); // ✅ import
 
-async function updateCategory() {
-  try {
-    await Service.updateMany(
-      { category: { $exists: false } },
-      { $set: { category: "General" } }
-    );
+// async function updateCategory() {
+//   try {
+//     await Service.updateMany(
+//       { category: { $exists: false } },
+//       { $set: { category: "General" } }
+//     );
 
-    console.log("✅ Categories added");
-  } catch (err) {
-    console.error("❌ Error updating categories:", err);
-  }
-}
-updateCategory()
+//     console.log("✅ Categories added");
+//   } catch (err) {
+//     console.error("❌ Error updating categories:", err);
+//   }
+// }
+// updateCategory()
+
 app.use("/api", routes)
 
 // Health check

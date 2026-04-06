@@ -11,6 +11,7 @@ const providerSchema = new mongoose.Schema(
 
     name: {
       type: String,
+      // required: true,
       trim: true,
     },
 
@@ -44,7 +45,7 @@ const providerSchema = new mongoose.Schema(
       default: null,
     },
 
-    phoneNumber: {
+    phone: {
       type: String,
       required: true,
       trim: true,

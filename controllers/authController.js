@@ -21,7 +21,7 @@ const models = {
 
 exports.signup = async (req, res) => {
   try {
-    let {partnerId, name, email, username, phoneNumber, password, role } = req.body;
+    let {partnerId, name, email, username, phone, password, role } = req.body;
 
     // ✅ Basic validation
     if ( !email || !password || !role) {
@@ -66,7 +66,7 @@ exports.signup = async (req, res) => {
       partnerId,
       email,
       username,
-      phoneNumber,
+      phone,
       password,
       role,
       otp,

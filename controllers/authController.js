@@ -1,43 +1,69 @@
-const User = require("../models/User")
-const ProviderAvailability = require("../models/ProviderAvailability")
-const { sendOTPEmail, sendPasswordResetEmail } = require("../services/emailService")
-const { generateOTP, getOTPExpiration } = require("../utils/otpUtils")
-const jwt = require("jsonwebtoken")
-const fs = require("fs")
-const path = require("path")
+const User = require("../models/User");
+const ProviderAvailability = require("../models/ProviderAvailability");
+const {
+  sendOTPEmail,
+  sendPasswordResetEmail,
+} = require("../services/emailService");
+const { generateOTP, getOTPExpiration } = require("../utils/otpUtils");
+const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
 const bcrypt = require("bcryptjs");
-const Provider = require("../models/Provider")
-const Partner = require("../models/Partner")
+const Provider = require("../models/Provider");
+const Partner = require("../models/Partner");
 
 const models = {
   platform_admin: User,
   customer: User,
   provider: Provider,
-  Partner: Partner,
-  
+  partner: Partner,
 };
 
-// Signup Controller
 exports.signup = async (req, res) => {
   try {
-    const { name, email, username, phoneNumber, password, role } = req.body
+    let {partnerId, name, email, username, phoneNumber, password, role } = req.body;
 
-    // Check if user already exists
-    let user = await User.findOne({ $or: [{ email }, { username }] })
-    if (user) {
+    // ✅ Basic validation
+    if ( !email || !password || !role) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields missing",
+      });
+    }
+
+    // ✅ Normalize
+    email = email.toLowerCase();
+    role = role.toLowerCase();
+
+    // ✅ Validate role
+    if (!models[role]) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role",
+      });
+    }
+
+    const Model = models[role];
+
+    // ✅ Check existing user
+    let existingUser = await Model.findOne({
+      $or: [{ email }, { username }],
+    });
+
+    if (existingUser) {
       return res.status(400).json({
         success: false,
         message: "Email or username already registered",
-      })
+      });
     }
 
-    // Generate OTP
-    const otp = generateOTP()
-    const otpExpires = getOTPExpiration()
+    // ✅ Generate OTP
+    const otp = generateOTP();
+    const otpExpires = getOTPExpiration();
 
-    // Create user object based on role
+    // ✅ Create user data
     const userData = {
-      name,
+      partnerId,
       email,
       username,
       phoneNumber,
@@ -46,12 +72,12 @@ exports.signup = async (req, res) => {
       otp,
       otpExpires,
       isEmailVerified: false,
-    }
+    };
 
-    // Create user
-    user = new User(userData)
-    await user.save()
+    // 🔥 IMPORTANT FIX → use dynamic model
+    const user = await Model.create(userData);
 
+    // ✅ Provider extra setup
     if (role === "provider") {
       const defaultSchedule = [
         { day: "Monday", enabled: false, start: "00:00", end: "00:00" },
@@ -61,20 +87,20 @@ exports.signup = async (req, res) => {
         { day: "Friday", enabled: false, start: "00:00", end: "00:00" },
         { day: "Saturday", enabled: false, start: "00:00", end: "00:00" },
         { day: "Sunday", enabled: false, start: "00:00", end: "00:00" },
-      ]
+      ];
 
       await ProviderAvailability.create({
         providerId: user._id,
         isOnlineAvailable: false,
         weeklySchedule: defaultSchedule,
-      })
+      });
     }
 
-    // Send OTP email
-    const displayName = username || email
-    await sendOTPEmail(email, otp, displayName)
+    // ✅ Send OTP
+    const displayName = username || email;
+    await sendOTPEmail(email, otp, displayName);
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Signup successful. Please verify your email with OTP",
       data: {
@@ -82,28 +108,29 @@ exports.signup = async (req, res) => {
         email: user.email,
         role: user.role,
       },
-    })
+    });
   } catch (error) {
-    console.error("Signup error:", error)
-    res.status(500).json({
+    console.error("Signup error:", error);
+
+    return res.status(500).json({
       success: false,
       message: error.message || "Signup failed",
-    })
+    });
   }
-}
+};
 
 // Verify OTP Controller
 exports.verifyOTP = async (req, res) => {
   try {
-    const { userId, otp } = req.body
+    const { userId, otp } = req.body;
 
     // Find user
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
-      })
+      });
     }
 
     // Check if OTP is expired
@@ -111,7 +138,7 @@ exports.verifyOTP = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "OTP expired. Please request a new one",
-      })
+      });
     }
 
     // Verify OTP
@@ -119,14 +146,14 @@ exports.verifyOTP = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid OTP",
-      })
+      });
     }
 
     // Mark email as verified and clear OTP
-    user.isEmailVerified = true
-    user.otp = null
-    user.otpExpires = null
-    await user.save()
+    user.isEmailVerified = true;
+    user.otp = null;
+    user.otpExpires = null;
+    await user.save();
 
     res.json({
       success: true,
@@ -136,41 +163,41 @@ exports.verifyOTP = async (req, res) => {
         email: user.email,
         role: user.role,
       },
-    })
+    });
   } catch (error) {
-    console.error("OTP verification error:", error)
+    console.error("OTP verification error:", error);
     res.status(500).json({
       success: false,
       message: "OTP verification failed",
-    })
+    });
   }
-}
+};
 
 // Resend OTP Controller
 exports.resendOTP = async (req, res) => {
   try {
-    const { email } = req.body
+    const { email } = req.body;
 
     // Find user
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
-      })
+      });
     }
 
     // Generate new OTP
-    const otp = generateOTP()
-    const otpExpires = getOTPExpiration()
+    const otp = generateOTP();
+    const otpExpires = getOTPExpiration();
 
-    user.otp = otp
-    user.otpExpires = otpExpires
-    await user.save()
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
 
     // Send OTP email
-    const displayName = user.username || user.email
-    await sendOTPEmail(email, otp, displayName)
+    const displayName = user.username || user.email;
+    await sendOTPEmail(email, otp, displayName);
 
     res.json({
       success: true,
@@ -178,19 +205,19 @@ exports.resendOTP = async (req, res) => {
       data: {
         userId: user._id,
       },
-    })
+    });
   } catch (error) {
-    console.error("Resend OTP error:", error)
+    console.error("Resend OTP error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to resend OTP",
-    })
+    });
   }
-}
+};
 
 // Login Controller
 exports.login = async (req, res) => {
-  console.log("api called",req.body)
+  console.log("api called", req.body);
   try {
     let { email, password, role } = req.body;
 
@@ -207,7 +234,7 @@ exports.login = async (req, res) => {
     role = role.toLowerCase();
 
     // ✅ Validate role
-    if (!["customer", "provider", "partner","platform_admin"].includes(role)) {
+    if (!["customer", "provider", "partner", "platform_admin"].includes(role)) {
       return res.status(400).json({
         success: false,
         message: "Invalid role",
@@ -216,10 +243,10 @@ exports.login = async (req, res) => {
 
     // ✅ Get model dynamically
     const Model = models[role];
-
+    // console.log(Model);
     // 🔍 Find user
     const user = await Model.findOne({ email }).select("+password");
-
+    // console.log(user);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -255,7 +282,7 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: process.env.JWT_EXPIRE || "7d",
-      }
+      },
     );
 
     // ❌ Hide password
@@ -282,28 +309,28 @@ exports.login = async (req, res) => {
 
 exports.forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body
+    const { email } = req.body;
 
     // Find user
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
-      })
+      });
     }
 
     // Generate password reset OTP
-    const otp = generateOTP()
-    const otpExpires = getOTPExpiration()
+    const otp = generateOTP();
+    const otpExpires = getOTPExpiration();
 
-    user.resetPasswordOtp = otp
-    user.resetPasswordOtpExpires = otpExpires
-    await user.save()
+    user.resetPasswordOtp = otp;
+    user.resetPasswordOtpExpires = otpExpires;
+    await user.save();
 
     // Send password reset email
-    const displayName = user.username || user.email
-    await sendPasswordResetEmail(email, otp, displayName)
+    const displayName = user.username || user.email;
+    await sendPasswordResetEmail(email, otp, displayName);
 
     res.json({
       success: true,
@@ -311,35 +338,38 @@ exports.forgotPassword = async (req, res) => {
       data: {
         userId: user._id,
       },
-    })
+    });
   } catch (error) {
-    console.error("Forgot password error:", error)
+    console.error("Forgot password error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to send password reset email",
-    })
+    });
   }
-}
+};
 
 exports.verifyResetOTP = async (req, res) => {
   try {
-    const { userId, otp } = req.body
+    const { userId, otp } = req.body;
 
     // Find user
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
-      })
+      });
     }
 
     // Check if OTP is expired
-    if (!user.resetPasswordOtpExpires || new Date() > user.resetPasswordOtpExpires) {
+    if (
+      !user.resetPasswordOtpExpires ||
+      new Date() > user.resetPasswordOtpExpires
+    ) {
       return res.status(400).json({
         success: false,
         message: "OTP expired. Please request a new one",
-      })
+      });
     }
 
     // Verify OTP
@@ -347,7 +377,7 @@ exports.verifyResetOTP = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid OTP",
-      })
+      });
     }
 
     res.json({
@@ -356,42 +386,42 @@ exports.verifyResetOTP = async (req, res) => {
       data: {
         userId: user._id,
       },
-    })
+    });
   } catch (error) {
-    console.error("Reset OTP verification error:", error)
+    console.error("Reset OTP verification error:", error);
     res.status(500).json({
       success: false,
       message: "OTP verification failed",
-    })
+    });
   }
-}
+};
 
 exports.resetPassword = async (req, res) => {
   try {
-    const { userId, newPassword, confirmPassword } = req.body
+    const { userId, newPassword, confirmPassword } = req.body;
 
     // Check if passwords match
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
         success: false,
         message: "Passwords do not match",
-      })
+      });
     }
 
     // Find user
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
-      })
+      });
     }
 
     // Update password and clear reset OTP
-    user.password = newPassword
-    user.resetPasswordOtp = null
-    user.resetPasswordOtpExpires = null
-    await user.save()
+    user.password = newPassword;
+    user.resetPasswordOtp = null;
+    user.resetPasswordOtpExpires = null;
+    await user.save();
 
     res.json({
       success: true,
@@ -399,15 +429,15 @@ exports.resetPassword = async (req, res) => {
       data: {
         userId: user._id,
       },
-    })
+    });
   } catch (error) {
-    console.error("Reset password error:", error)
+    console.error("Reset password error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to reset password",
-    })
+    });
   }
-}
+};
 
 // Change Password
 exports.changePassword = async (req, res) => {
@@ -461,7 +491,6 @@ exports.changePassword = async (req, res) => {
       success: true,
       message: "Password updated successfully",
     });
-
   } catch (error) {
     console.error("Change password error:", error);
     res.status(500).json({
@@ -470,7 +499,6 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
-
 
 exports.getProfile = async (req, res) => {
   try {
@@ -508,9 +536,9 @@ exports.getProfile = async (req, res) => {
 
 exports.editProfile = async (req, res) => {
   try {
-    const { userId } = req.params
-    const updates = req.body
-console.log(req.body)
+    const { userId } = req.params;
+    const updates = req.body;
+    console.log(req.body);
     // ❌ Fields user should NOT update directly
     const restrictedFields = [
       "otp",
@@ -523,45 +551,45 @@ console.log(req.body)
       "_id",
       "createdAt",
       "updatedAt",
-    ]
+    ];
 
     // Remove restricted fields
-    restrictedFields.forEach(field => delete updates[field])
+    restrictedFields.forEach((field) => delete updates[field]);
 
     // Find user
-    const user = await User.findById(userId).select("+password")
+    const user = await User.findById(userId).select("+password");
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
-      })
+      });
     }
 
     // ✅ Email update with check
     if (updates.email && updates.email !== user.email) {
-      const existingUser = await User.findOne({ email: updates.email })
+      const existingUser = await User.findOne({ email: updates.email });
       if (existingUser) {
         return res.status(400).json({
           success: false,
           message: "Email already in use",
-        })
+        });
       }
-      user.email = updates.email
+      user.email = updates.email;
     }
 
     // ✅ Password update (IMPORTANT)
     if (updates.password) {
-      const salt = await bcrypt.genSalt(10)
-      user.password = await bcrypt.hash(updates.password, salt)
-      delete updates.password
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(updates.password, salt);
+      delete updates.password;
     }
 
     // ✅ Update remaining fields dynamically
-    Object.keys(updates).forEach(key => {
+    Object.keys(updates).forEach((key) => {
       if (updates[key] !== undefined) {
-        user[key] = updates[key]
+        user[key] = updates[key];
       }
-    })
+    });
 
     // ✅ Profile image update
     if (req.file) {
@@ -569,55 +597,53 @@ console.log(req.body)
         const oldPath = path.join(
           __dirname,
           "../uploads",
-          path.basename(user.profileImage)
-        )
+          path.basename(user.profileImage),
+        );
         if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath)
+          fs.unlinkSync(oldPath);
         }
       }
-      user.profileImage = `/uploads/${req.file.filename}`
+      user.profileImage = `/uploads/${req.file.filename}`;
     }
 
-    await user.save()
+    await user.save();
 
     res.json({
       success: true,
       message: "Profile updated successfully",
       data: user.toJSON(),
-    })
+    });
   } catch (error) {
-    console.error("Edit profile error:", error)
+    console.error("Edit profile error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update profile",
-    })
+    });
   }
-}
-
-
+};
 
 exports.googleCallback = async (req, res) => {
   try {
-    const { googleId, email, role } = req.body
+    const { googleId, email, role } = req.body;
 
     // Check if user exists
-    let user = await User.findOne({ $or: [{ googleId }, { email }] })
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
 
     if (user) {
       // Update existing user if email changed
       if (user.email !== email) {
-        user.email = email
+        user.email = email;
       }
       // Mark email as verified for Google OAuth users
-      user.isEmailVerified = true
-      await user.save()
+      user.isEmailVerified = true;
+      await user.save();
     } else {
       // Create new user for Google OAuth
       if (!role) {
         return res.status(400).json({
           success: false,
           message: "Role is required for new user registration",
-        })
+        });
       }
 
       user = new User({
@@ -625,15 +651,19 @@ exports.googleCallback = async (req, res) => {
         googleId,
         role,
         isEmailVerified: true,
-      })
+      });
 
-      await user.save()
+      await user.save();
     }
 
     // Generate JWT token
-    const token = jwt.sign({ userId: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE || "7d",
-    })
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRE || "7d",
+      },
+    );
 
     res.json({
       success: true,
@@ -642,12 +672,12 @@ exports.googleCallback = async (req, res) => {
         token,
         user: user.toJSON(),
       },
-    })
+    });
   } catch (error) {
-    console.error("Google callback error:", error)
+    console.error("Google callback error:", error);
     res.status(500).json({
       success: false,
       message: "Google authentication failed",
-    })
+    });
   }
-}
+};

@@ -123,9 +123,9 @@ exports.signup = async (req, res) => {
 exports.verifyOTP = async (req, res) => {
   try {
     const { userId, otp } = req.body;
-
+  const Model = models[role];
     // Find user
-    const user = await User.findById(userId);
+    const user = await Model.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -178,8 +178,9 @@ exports.resendOTP = async (req, res) => {
   try {
     const { email } = req.body;
 
+const Model = models[role];
     // Find user
-    const user = await User.findOne({ email });
+    const user = await Model.findOne({ email });
     if (!user) {
       return res.status(404).json({
         success: false,

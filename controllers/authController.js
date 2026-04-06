@@ -122,7 +122,7 @@ exports.signup = async (req, res) => {
 // Verify OTP Controller
 exports.verifyOTP = async (req, res) => {
   try {
-    const { userId, otp } = req.body;
+    const { userId, otp, role } = req.body;
   const Model = models[role];
     // Find user
     const user = await Model.findById(userId);
@@ -218,10 +218,10 @@ const Model = models[role];
 
 // Login Controller
 exports.login = async (req, res) => {
-  console.log("api called", req.body);
+  
   try {
     let { email, password, role } = req.body;
-
+console.log("api called", req.body);
     // ✅ Basic validation
     if (!email || !password || !role) {
       return res.status(400).json({

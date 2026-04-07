@@ -28,11 +28,11 @@ router.get("/users/:id", verifyToken, requireRole("platform_admin"), getUserById
 router.delete("/users/:id", verifyToken, requireRole("platform_admin"), deleteUser);
 router.patch("/users/:id/toggle-status", verifyToken, requireRole("platform_admin"), toggleUserStatus);
 
-// ===================== CATEGORY MANAGEMENT =====================//
-router.post("/categories", upload.single("icon"), adminCategoryController.createCategory)
-router.get("/categories", adminCategoryController.getCategories)
-router.put("/categories/:id", upload.single("icon"), adminCategoryController.updateCategory)
-router.delete("/categories/:id", adminCategoryController.deleteCategory)
+// ===================== CATEGORY MANAGEMENT (Admin only) =====================//
+router.post("/categories", verifyToken, requireRole("platform_admin"), upload.single("icon"), adminCategoryController.createCategory)
+router.get("/categories", verifyToken, requireRole("platform_admin"), adminCategoryController.getCategories)
+router.put("/categories/:id", verifyToken, requireRole("platform_admin"), upload.single("icon"), adminCategoryController.updateCategory)
+router.delete("/categories/:id", verifyToken, requireRole("platform_admin"), adminCategoryController.deleteCategory)
 
 // Booking Management Routes
 router.get("/allBookings", verifyToken, requireRole("platform_admin"), getAllBookings);

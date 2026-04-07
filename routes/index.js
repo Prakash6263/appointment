@@ -4,6 +4,7 @@ const profileRoutes = require("./profile")
 const legalRoutes = require("./legal")
 const adminRoutes = require("./admin.routes")
 const locationRoutes = require("./locationRoutes")
+const publicCategoryController = require("../controllers/publicCategoryController")
 
 const partnerApiRoutes = require("./partnerApi.routes")
 const providerRoutes = require("./provider.routes")
@@ -13,6 +14,9 @@ const customerRoutes = require("./customerApi.route")
 const purchaseRoutes = require("./purchaseRoutes")
 
 const router = express.Router()
+
+// ===================== PUBLIC CATEGORIES (No Auth Required) ===================== //
+router.get("/categories", publicCategoryController.getActiveCategories)
 
 router.use("/auth", authRoutes)
 router.use("/profile", profileRoutes)

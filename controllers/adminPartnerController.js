@@ -53,18 +53,32 @@ exports.getAllPartners = async (req, res) => {
 
     const partners = await Partner.find(query)
       .populate("providers")
-      .populate("services")
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .skip(parseInt(skip))
 
+    const Service = require("../models/Service")
+    const partnerIds = partners.map((p) => p._id)
+    const allServices = await Service.find({ partnerId: { $in: partnerIds }, isDeleted: false })
+    const servicesByPartner = allServices.reduce((acc, s) => {
+      const key = String(s.partnerId)
+      if (!acc[key]) acc[key] = []
+      acc[key].push(s)
+      return acc
+    }, {})
+
+    const partnersWithServices = partners.map((p) => ({
+      ...p.toObject(),
+      services: servicesByPartner[String(p._id)] || [],
+    }))
+
     res.json({
       success: true,
-      count: partners.length,
+      count: partnersWithServices.length,
       total,
       page: parseInt(page),
       pages: Math.ceil(total / limit),
-      partners,
+      partners: partnersWithServices,
     })
   } catch (error) {
     console.error("Get all partners error:", error)
@@ -82,7 +96,6 @@ exports.getPartnerDetails = async (req, res) => {
 
     const partner = await Partner.findById(id)
       .populate("providers")
-      .populate("services")
 
     if (!partner) {
       return res.status(404).json({
@@ -91,9 +104,12 @@ exports.getPartnerDetails = async (req, res) => {
       })
     }
 
+    const Service = require("../models/Service")
+    const services = await Service.find({ partnerId: id, isDeleted: false })
+
     res.json({
       success: true,
-      partner,
+      partner: { ...partner.toObject(), services },
     })
   } catch (error) {
     console.error("Get partner details error:", error)
@@ -332,9 +348,7 @@ exports.deletePartner = async (req, res) => {
       await require("../models/Provider").deleteMany({ _id: { $in: partner.providers } })
     }
 
-    if (partner.services && partner.services.length > 0) {
-      await require("../models/Service").deleteMany({ _id: { $in: partner.services } })
-    }
+    await require("../models/Service").deleteMany({ partnerId: id })
 
     // Delete partner
     await Partner.findByIdAndDelete(id)

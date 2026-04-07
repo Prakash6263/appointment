@@ -43,12 +43,6 @@ const partnerSchema = new mongoose.Schema(
         ref: "Provider",
       },
     ],
-    services: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Service",
-      },
-    ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

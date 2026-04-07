@@ -234,7 +234,6 @@ exports.getProfile = async (req, res) => {
   try {
     const partner = await Partner.findById(req.partnerId)
       .populate("providers")
-      .populate("services")
 
     if (!partner) {
       return res.status(404).json({
@@ -243,9 +242,11 @@ exports.getProfile = async (req, res) => {
       })
     }
 
+    const services = await Service.find({ partnerId: req.partnerId, isDeleted: false })
+
     res.json({
       success: true,
-      partner,
+      partner: { ...partner.toObject(), services },
     })
   } catch (error) {
     console.error("Get profile error:", error)

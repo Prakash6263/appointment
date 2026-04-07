@@ -5,6 +5,8 @@ const { requireRole } = require("../middleware/role.middleware")
 const planController = require("../controllers/planController")
 const { listUsers, getUserById, deleteUser,toggleUserStatus  } = require("../controllers/adminCustomerController")
 const { getAllBookings, getBookingsByProviderId, getBookingsByPartnerId, getBookingsByUserId } = require("../controllers/adminBookingController")
+const adminCategoryController = require("../controllers/adminCategoryController")
+const upload = require("../middleware/multer")
 
 const router = express.Router()
 
@@ -26,7 +28,13 @@ router.get("/users/:id", verifyToken, requireRole("platform_admin"), getUserById
 router.delete("/users/:id", verifyToken, requireRole("platform_admin"), deleteUser);
 router.patch("/users/:id/toggle-status", verifyToken, requireRole("platform_admin"), toggleUserStatus);
 
-// User Management Routes
+// ===================== CATEGORY MANAGEMENT =====================//
+router.post("/categories", upload.single("icon"), adminCategoryController.createCategory)
+router.get("/categories", adminCategoryController.getCategories)
+router.put("/categories/:id", upload.single("icon"), adminCategoryController.updateCategory)
+router.delete("/categories/:id", adminCategoryController.deleteCategory)
+
+// Booking Management Routes
 router.get("/allBookings", verifyToken, requireRole("platform_admin"), getAllBookings);
 router.get("/bookings/partner/:partnerId", verifyToken, getBookingsByPartnerId);
 router.get("/bookings/provider/:providerId", verifyToken, getBookingsByProviderId);

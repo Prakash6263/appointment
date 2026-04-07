@@ -1,5 +1,6 @@
 const Partner = require("../models/Partner")
 const Provider = require("../models/Provider")
+const Service = require("../models/Service")
 const Plan = require("../models/Plan")
 const User = require("../models/User");
 const limitService = require("../services/limitService");
@@ -149,20 +150,7 @@ exports.createProvider = async (req, res) => {
       phone,
       password,
       specialization = "",
-      services = [],
     } = req.body;
-
-    // ================= SERVICES PARSE =================
-    if (typeof services === "string") {
-      try {
-        services = JSON.parse(services);
-      } catch (err) {
-        return res.status(400).json({
-          success: false,
-          message: "Services must be a valid JSON array",
-        });
-      }
-    }
 
     // ================= TRIM =================
     name = name?.trim();
@@ -192,14 +180,6 @@ exports.createProvider = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Password must be at least 6 characters long",
-      });
-    }
-
-    // Services must be array
-    if (!Array.isArray(services)) {
-      return res.status(400).json({
-        success: false,
-        message: "Services must be an array",
       });
     }
 
@@ -241,7 +221,6 @@ exports.createProvider = async (req, res) => {
       phone,
       password: hashedPassword,
       specialization,
-      services,
       profileImage,
       status: "ACTIVE",
 
@@ -260,12 +239,13 @@ exports.createProvider = async (req, res) => {
     // ================= INCREMENT PROVIDER LIMIT =================
     await limitService.incrementUsedProviders(req.partnerId, 1);
 
-    // ================= POPULATE =================
-    await provider.populate("services");
+    // ================= REVERSE-LOOKUP SERVICES =================
+    const assignedServices = await Service.find({ providers: provider._id, isDeleted: false }).select("_id name price duration categoryId");
 
     // ================= CLEAN RESPONSE =================
     const providerResponse = provider.toObject();
     delete providerResponse.password;
+    providerResponse.services = assignedServices;
 
     return res.status(201).json({
       success: true,
@@ -311,12 +291,8 @@ exports.getProviderById = async (req, res) => {
     // console.log("ID:", providerId);
 
     const provider = await Provider.findOne({
-      _id: providerId,   // ✅ correct
-      // partnerId: req.partnerId, (optional)
-      // isDeleted: false (optional)
-    })
-      .populate("services")
-      .select("-password");
+      _id: providerId,
+    }).select("-password");
 
     if (!provider) {
       return res.status(404).json({
@@ -325,9 +301,11 @@ exports.getProviderById = async (req, res) => {
       });
     }
 
+    const assignedServices = await Service.find({ providers: provider._id, isDeleted: false }).select("_id name price duration categoryId");
+
     return res.status(200).json({
       success: true,
-      provider,
+      provider: { ...provider.toObject(), services: assignedServices },
     });
 
   } catch (error) {
@@ -352,7 +330,6 @@ exports.updateProvider = async (req, res) => {
       phone,
       password,
       specialization,
-      services,
       experience,
       status,
     } = req.body;
@@ -369,18 +346,6 @@ exports.updateProvider = async (req, res) => {
         success: false,
         message: "Provider not found",
       });
-    }
-
-    // ✅ Convert services (form-data fix)
-    if (typeof services === "string") {
-      try {
-        services = JSON.parse(services);
-      } catch (err) {
-        return res.status(400).json({
-          success: false,
-          message: "Services must be a valid JSON array",
-        });
-      }
     }
 
     // ============================
@@ -424,10 +389,6 @@ exports.updateProvider = async (req, res) => {
       provider.specialization = specialization?.trim();
     }
 
-    if (Array.isArray(services)) {
-      provider.services = services;
-    }
-
     if (experience !== undefined) {
       provider.experience = Number(experience) || 0;
     }
@@ -458,12 +419,13 @@ if (req.files?.profileImage?.[0]) {
     // ✅ Save updated provider
     await provider.save();
 
-    // ✅ Populate services
-    await provider.populate("services");
+    // ✅ Reverse-lookup assigned services
+    const assignedServices = await Service.find({ providers: provider._id, isDeleted: false }).select("_id name price duration categoryId");
 
     // ✅ Remove password from response
     const responseData = provider.toObject();
     delete responseData.password;
+    responseData.services = assignedServices;
 
     return res.status(200).json({
       success: true,

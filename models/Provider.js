@@ -57,13 +57,6 @@ const providerSchema = new mongoose.Schema(
       index: true,
     },
 
-    services: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Service",
-      },
-    ],
-
     profileImage: {
       type: String,
       default: "",

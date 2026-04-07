@@ -4,6 +4,7 @@ const router = express.Router()
 const partnerAuthController = require("../controllers/partnerAuthController")
 const partnerProviderController = require("../controllers/partnerProviderController")
 const partnerServiceController = require("../controllers/partnerServiceController")
+const publicCategoryController = require("../controllers/publicCategoryController")
 const partnerBookingController = require("../controllers/partnerBookingController")
 const adminPartnerController = require("../controllers/adminPartnerController")
 const emailVerificationPageController = require("../controllers/emailVerificationPageController")
@@ -78,25 +79,30 @@ router.put("/providersUpdate/:providerId",verifyPartnerToken,upload.fields([{ na
 router.delete("/providers/:id", verifyPartnerToken, partnerProviderController.deleteProvider)
 
 
+// ===================== CATEGORIES (read-only for partners) =====================//
+
+// Get All Active Categories (public — partners browse to select when creating services)
+router.get("/categories", publicCategoryController.getActiveCategories)
+
+
 // ===================== SERVICES CRUD =====================//
 
 // Create Service
-router.post("/services",verifyPartnerToken, upload.single("image"), partnerServiceController.createService)
+router.post("/services", verifyPartnerToken, upload.single("image"), partnerServiceController.createService)
 
-// Get All Services
+// Get All Services (supports ?categoryId=&isActive= filters)
 router.get("/services", verifyPartnerToken, partnerServiceController.getServices)
 
-// Get  Services ById
+// Get Service By Id
 router.get("/services/:id", verifyPartnerToken, partnerServiceController.getServiceById)
 
 // Update Service
-router.put("/services/:id", verifyPartnerToken, partnerServiceController.updateService)
+router.put("/services/:id", verifyPartnerToken, upload.single("image"), partnerServiceController.updateService)
 
-// Delete Service
+// Soft Delete Service
 router.delete("/services/:id", verifyPartnerToken, partnerServiceController.deleteService)
 
-router.patch("/partner/availability",verifyToken,requireRole("partner"), partnerServiceController.setAvailability
-);
+router.patch("/availability", verifyPartnerToken, partnerServiceController.setAvailability);
 
 
 // ===================== BOOKINGS=======================//

@@ -5,6 +5,13 @@ const legalRoutes = require("./legal")
 const adminRoutes = require("./admin.routes")
 const locationRoutes = require("./locationRoutes")
 const publicCategoryController = require("../controllers/publicCategoryController")
+const {
+  getAllPublicServices,
+  getPublicServiceById,
+  getServiceProviders,
+  getProviderServices,
+  getServicesByCategory,
+} = require("../controllers/publicServiceController")
 
 const partnerApiRoutes = require("./partnerApi.routes")
 const providerRoutes = require("./provider.routes")
@@ -17,6 +24,22 @@ const router = express.Router()
 
 // ===================== PUBLIC CATEGORIES (No Auth Required) ===================== //
 router.get("/categories", publicCategoryController.getActiveCategories)
+
+// ===================== PUBLIC SERVICES (No Auth Required) ===================== //
+// Get all public services with optional filters (categoryId, partnerId, providerId, city, sortBy)
+router.get("/services/public", getAllPublicServices)
+
+// Get all providers of a specific service
+router.get("/services/public/:serviceId/providers", getServiceProviders)
+
+// Get all services by category
+router.get("/categories/:categoryId/services", getServicesByCategory)
+
+// Get all services of a specific provider
+router.get("/providers/:providerId/services", getProviderServices)
+
+// Get service by ID
+router.get("/services/public/:id", getPublicServiceById)
 
 router.use("/auth", authRoutes)
 router.use("/profile", profileRoutes)

@@ -1,5 +1,6 @@
 const Booking = require("../models/Booking");
 const Provider = require("../models/Provider");
+const limitService = require("../services/limitService");
 
 /* =====================================================
    CUSTOMER SIDE API
@@ -17,6 +18,16 @@ exports.createBooking = async (req, res) => {
       });
     }
 
+    // Check customer limit before creating booking
+    const isLimitReached = await limitService.isCustomerLimitReached(partnerId);
+    if (isLimitReached) {
+      return res.status(403).json({
+        success: false,
+        message: "Customer limit reached for this partner",
+        limitExceeded: true,
+      });
+    }
+
     // Create booking with default status PENDING
     const booking = await Booking.create({
       partnerId,
@@ -25,6 +36,9 @@ exports.createBooking = async (req, res) => {
       serviceId,
       bookingDate,
     });
+
+    // Track unique customer for this partner
+    await limitService.trackUniqueCustomer(partnerId, userId);
 
     res.status(201).json({
       success: true,

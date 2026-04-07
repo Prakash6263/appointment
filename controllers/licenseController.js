@@ -1,5 +1,6 @@
 const Partner = require("../models/Partner")
 const Plan = require("../models/Plan")
+const limitService = require("../services/limitService")
 
 // Get Partner License
 exports.getPartnerLicense = async (req, res) => {
@@ -14,12 +15,16 @@ exports.getPartnerLicense = async (req, res) => {
       })
     }
 
+    // Get limit info
+    const limitInfo = await limitService.getPartnerLimitInfo(partner._id)
+
     res.json({
       success: true,
       message: "License retrieved successfully",
       data: {
         license: partner.license,
         plan: partner.license.planId,
+        limits: limitInfo.limits,
       },
     })
   } catch (error) {
@@ -84,11 +89,15 @@ exports.upgradeLicense = async (req, res) => {
 
     await partner.save()
 
+    // Get limit info
+    const limitInfo = await limitService.getPartnerLimitInfo(partner._id)
+
     res.json({
       success: true,
       message: "License upgraded successfully",
       data: {
         license: partner.license,
+        limits: limitInfo.limits,
       },
     })
   } catch (error) {

@@ -2,6 +2,7 @@ const Partner = require("../models/Partner")
 const Provider = require("../models/Provider")
 const Plan = require("../models/Plan")
 const User = require("../models/User");
+const limitService = require("../services/limitService");
 const SALT_ROUNDS = 10; // Adjust as needed (10-12 is typical)
 const bcrypt = require("bcrypt");
 
@@ -82,10 +83,16 @@ exports.getPartner = async (req, res) => {
       })
     }
 
+    // Get limit info
+    const limitInfo = await limitService.getPartnerLimitInfo(partner._id)
+
     res.json({
       success: true,
       message: "Partner retrieved successfully",
-      data: partner,
+      data: {
+        ...partner.toObject(),
+        limits: limitInfo.limits,
+      },
     })
   } catch (error) {
     console.error("Get partner error:", error)
@@ -210,6 +217,16 @@ exports.createProvider = async (req, res) => {
       });
     }
 
+    // ================= PROVIDER LIMIT CHECK =================
+    const isProviderLimitReached = await limitService.isProviderLimitReached(req.partnerId);
+    if (isProviderLimitReached) {
+      return res.status(403).json({
+        success: false,
+        message: "Provider limit reached for this partner",
+        limitExceeded: true,
+      });
+    }
+
     // ================= FILE UPLOAD =================
     const profileImage = req.files?.profileImage?.[0]?.path || "";
 
@@ -239,6 +256,9 @@ exports.createProvider = async (req, res) => {
       { $push: { providers: provider._id } },
       { new: true }
     );
+
+    // ================= INCREMENT PROVIDER LIMIT =================
+    await limitService.incrementUsedProviders(req.partnerId, 1);
 
     // ================= POPULATE =================
     await provider.populate("services");

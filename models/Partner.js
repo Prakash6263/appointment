@@ -133,6 +133,11 @@ const partnerSchema = new mongoose.Schema(
         default: null,
       },
     },
+    uniqueCustomers: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
 
     isActive: {
       type: Boolean,
@@ -203,5 +208,29 @@ partnerSchema.methods.toJSON = function () {
   delete partner.passwordResetAttempts;
   return partner;
 };
+
+// Virtual field for remaining customers
+partnerSchema.virtual("remainingCustomers").get(function () {
+  if (!this.license.customerLimit) return null;
+  return Math.max(0, this.license.customerLimit - (this.uniqueCustomers?.length || 0));
+});
+
+// Virtual field for remaining providers
+partnerSchema.virtual("remainingProviders").get(function () {
+  if (!this.license.providerLimit) return null;
+  return Math.max(0, this.license.providerLimit - this.license.usedProviders);
+});
+
+// Virtual field for customer limit reached
+partnerSchema.virtual("customerLimitReached").get(function () {
+  if (!this.license.customerLimit) return false;
+  return (this.uniqueCustomers?.length || 0) >= this.license.customerLimit;
+});
+
+// Virtual field for provider limit reached
+partnerSchema.virtual("providerLimitReached").get(function () {
+  if (!this.license.providerLimit) return false;
+  return this.license.usedProviders >= this.license.providerLimit;
+});
 
 module.exports = mongoose.model("Partner", partnerSchema);

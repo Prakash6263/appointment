@@ -9,8 +9,9 @@ const {
   getCustomerServices,
   getServiceById,
   getProvidersByPartnerId,
+  getProvidersByCategory,
   getProviderDetails,
- addProviderReview,
+  addProviderReview,
   createContact,
   getServicesByCity,
 } = require("../controllers/customerController");
@@ -41,6 +42,9 @@ router.get("/services/:id", verifyToken, requireRole("customer"), getServiceById
 
 // Get providers for a specific partner
 router.get("/getProvider/:partnerId", verifyToken, requireRole("customer"), getProvidersByPartnerId);
+
+// Get providers for a specific category
+router.get("/categories/:categoryId/providers", verifyToken, requireRole("customer"), getProvidersByCategory);
 
 // Get provider details
 // router.get("/providers/:id", verifyToken, requireRole("customer"), getProviderDetails);

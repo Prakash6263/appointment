@@ -125,6 +125,80 @@ const getProvidersByPartnerId = async (req, res) => {
   }
 }
 
+// ============================
+// Get Providers by Category ID
+// ============================
+const getProvidersByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    if (!categoryId) {
+      return res.status(400).json({
+        success: false,
+        message: "categoryId is required",
+      });
+    }
+
+    // Step 1: Find all active, non-deleted services under this category that have at least one provider
+    const services = await Service.find({
+      categoryId,
+      isActive: true,
+      isDeleted: false,
+      providers: { $exists: true, $not: { $size: 0 } },
+    }).select("providers");
+
+    if (!services.length) {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        providers: [],
+      });
+    }
+
+    // Step 2: Collect unique provider IDs across all matched services
+    const providerIdSet = new Set();
+    services.forEach((s) => {
+      s.providers.forEach((id) => providerIdSet.add(String(id)));
+    });
+
+    const uniqueProviderIds = Array.from(providerIdSet);
+
+    // Step 3: Fetch provider documents (active, non-deleted only)
+    const providers = await Provider.find({
+      _id: { $in: uniqueProviderIds },
+      status: "ACTIVE",
+      isDeleted: false,
+    }).select("-password -emailVerificationToken -emailVerificationExpires");
+
+    // Step 4: For each provider attach the services they offer under this category
+    const providerServiceMap = {};
+    services.forEach((s) => {
+      s.providers.forEach((pId) => {
+        const key = String(pId);
+        if (!providerServiceMap[key]) providerServiceMap[key] = [];
+        providerServiceMap[key].push(s._id);
+      });
+    });
+
+    const result = providers.map((p) => ({
+      ...p.toObject(),
+      serviceIds: providerServiceMap[String(p._id)] || [],
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: result.length,
+      providers: result,
+    });
+  } catch (error) {
+    console.error("getProvidersByCategory error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch providers for this category",
+    });
+  }
+};
+
 // controllers/contactController.js
 
 
@@ -159,5 +233,6 @@ module.exports = {
   getServicesByCity,
   getServiceById,
   getProvidersByPartnerId,
+  getProvidersByCategory,
   createContact
 }

@@ -31,6 +31,11 @@ const bookingSchema = new mongoose.Schema(
       enum: ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"],
       default: "PENDING",
     },
+    isNewCustomerBooking: {
+      type: Boolean,
+      default: false,
+      description: "True if this was the booking that added this customer to partner's unique list",
+    },
   },
   { timestamps: true },
 )

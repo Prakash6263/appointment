@@ -57,6 +57,12 @@ const providerSchema = new mongoose.Schema(
       index: true,
     },
 
+    description: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     profileImage: {
       type: String,
       default: "",

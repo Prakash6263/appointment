@@ -150,6 +150,7 @@ exports.createProvider = async (req, res) => {
       phone,
       password,
       specialization = "",
+      description = "",
     } = req.body;
 
     // ================= TRIM =================
@@ -157,6 +158,7 @@ exports.createProvider = async (req, res) => {
     email = email?.toLowerCase().trim();
     phone = phone?.trim();
     specialization = specialization?.trim();
+    description = description?.trim();
 
     // ================= VALIDATION =================
     if (!name || !email || !phone || !password) {
@@ -221,6 +223,7 @@ exports.createProvider = async (req, res) => {
       phone,
       password: hashedPassword,
       specialization,
+      description,
       profileImage,
       status: "ACTIVE",
 
@@ -330,6 +333,7 @@ exports.updateProvider = async (req, res) => {
       phone,
       password,
       specialization,
+      description,
       experience,
       status,
     } = req.body;
@@ -387,6 +391,10 @@ exports.updateProvider = async (req, res) => {
 
     if (specialization !== undefined) {
       provider.specialization = specialization?.trim();
+    }
+
+    if (description !== undefined) {
+      provider.description = description?.trim();
     }
 
     if (experience !== undefined) {

@@ -18,27 +18,43 @@ exports.createBooking = async (req, res) => {
       });
     }
 
-    // Check customer limit before creating booking
-    const isLimitReached = await limitService.isCustomerLimitReached(partnerId);
-    if (isLimitReached) {
-      return res.status(403).json({
-        success: false,
-        message: "Customer limit reached for this partner",
-        limitExceeded: true,
-      });
+    // ✅ Step 1: Check if customer is NEW (has no successful bookings with this partner)
+    const isNewCustomer = await limitService.isNewCustomerForPartner(partnerId, userId);
+
+    // ✅ Step 2: If NEW customer, validate and add to unique customers list
+    if (isNewCustomer) {
+      const isLimitReached = await limitService.isCustomerLimitReached(partnerId);
+      if (isLimitReached) {
+        return res.status(403).json({
+          success: false,
+          message: "Customer limit reached for this partner. Existing customers can still book.",
+          limitExceeded: true,
+          reason: "NEW_CUSTOMER_LIMIT_REACHED",
+        });
+      }
+
+      // Atomically add customer to unique list (only if limit allows)
+      const wasAdded = await limitService.addUniqueCustomer(partnerId, userId);
+      if (!wasAdded) {
+        // Race condition: limit was reached between our check and atomic add
+        return res.status(403).json({
+          success: false,
+          message: "Customer limit reached for this partner. Existing customers can still book.",
+          limitExceeded: true,
+          reason: "NEW_CUSTOMER_LIMIT_REACHED",
+        });
+      }
     }
 
-    // Create booking with default status PENDING
+    // ✅ Step 3: Create booking (now safe for both new and existing customers)
     const booking = await Booking.create({
       partnerId,
       providerId,
       userId,
       serviceId,
       bookingDate,
+      isNewCustomerBooking: isNewCustomer, // Track if this booking was from a new customer
     });
-
-    // Track unique customer for this partner
-    await limitService.trackUniqueCustomer(partnerId, userId);
 
     res.status(201).json({
       success: true,

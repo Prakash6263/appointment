@@ -12,7 +12,7 @@ const {
   getProviderServices,
   getServicesByCategory,
 } = require("../controllers/publicServiceController")
-
+const publicSubServiceController = require("../controllers/publicSubServiceController");
 const partnerApiRoutes = require("./partnerApi.routes")
 const providerRoutes = require("./provider.routes")
 const notificationRoutes = require("./notifications")
@@ -40,6 +40,26 @@ router.get("/providers/:providerId/services", getProviderServices)
 
 // Get service by ID
 router.get("/services/public/:id", getPublicServiceById)
+
+
+
+// ===================== PUBLIC SUB SERVICES =====================//
+
+// Get all subservices (with filters)
+router.get("/sub-services/public", publicSubServiceController.getAllPublicSubServices);
+
+// Get subservices by serviceId
+router.get("/sub-services/public/:serviceId", publicSubServiceController.getSubServicesByService);
+
+// Get grouped (Men/Women tabs)
+router.get("/sub-services/public/:serviceId/grouped", publicSubServiceController.getSubServicesGrouped);
+
+// Get single subservice
+router.get("/sub-service/public/:id", publicSubServiceController.getSubServiceById);
+
+
+
+
 
 router.use("/auth", authRoutes)
 router.use("/profile", profileRoutes)

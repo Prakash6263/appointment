@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -7,89 +7,37 @@ const bookingSchema = new mongoose.Schema(
       ref: "Partner",
       required: true,
     },
-
     providerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // better keep consistent with your User model
+      ref: "Provider",
       required: true,
-      index: true,
     },
-
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
     serviceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Service",
       required: true,
     },
-
-    // ✅ ONLY DATE (no time)
     bookingDate: {
       type: Date,
       required: true,
-      index: true,
     },
-
-    // ✅ SLOT (IMPORTANT 🔥)
-    startTime: {
-      type: String, // "10:00"
-      required: true,
-    },
-
-    endTime: {
-      type: String, // "11:00"
-      required: true,
-    },
-
-    // ✅ OPTIONAL (better performance for comparisons)
-    startMinutes: {
-      type: Number, // 600
-    },
-
-    endMinutes: {
-      type: Number, // 660
-    },
-
     status: {
       type: String,
       enum: ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"],
       default: "PENDING",
-      index: true,
     },
-
     isNewCustomerBooking: {
       type: Boolean,
       default: false,
+      description: "True if this was the booking that added this customer to partner's unique list",
     },
   },
-  { timestamps: true }
-);
+  { timestamps: true },
+)
 
-
-// 🔥 IMPORTANT INDEX (for fast conflict check)
-bookingSchema.index({ providerId: 1, bookingDate: 1 });
-
-
-// 🔥 Auto-calculate minutes before save
-bookingSchema.pre("save", function (next) {
-  const toMinutes = (time) => {
-    const [h, m] = time.split(":").map(Number);
-    return h * 60 + m;
-  };
-
-  if (this.startTime) this.startMinutes = toMinutes(this.startTime);
-  if (this.endTime) this.endMinutes = toMinutes(this.endTime);
-
-  // Normalize date (important)
-  if (this.bookingDate) {
-    this.bookingDate.setHours(0, 0, 0, 0);
-  }
-
-  next();
-});
-
-module.exports = mongoose.model("Booking", bookingSchema);
+module.exports = mongoose.model("Booking", bookingSchema)

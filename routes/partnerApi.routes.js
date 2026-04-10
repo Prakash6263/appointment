@@ -4,7 +4,6 @@ const router = express.Router()
 const partnerAuthController = require("../controllers/partnerAuthController")
 const partnerProviderController = require("../controllers/partnerProviderController")
 const partnerServiceController = require("../controllers/partnerServiceController")
-const partnerSubServiceController = require("../controllers/PartnerSubServiceController")
 const publicCategoryController = require("../controllers/publicCategoryController")
 const partnerBookingController = require("../controllers/partnerBookingController")
 const adminPartnerController = require("../controllers/adminPartnerController")
@@ -90,57 +89,21 @@ router.get("/categories", publicCategoryController.getActiveCategories)
 
 // Create Service
 router.post("/services", verifyPartnerToken, upload.single("image"), partnerServiceController.createService)
+
 // Get All Services (supports ?categoryId=&isActive= filters)
 router.get("/services", verifyPartnerToken, partnerServiceController.getServices)
+
 // Get Service By Id
 router.get("/services/:id", verifyPartnerToken, partnerServiceController.getServiceById)
+
 // Update Service
 router.put("/services/:id", verifyPartnerToken, upload.single("image"), partnerServiceController.updateService)
+
 // Soft Delete Service
 router.delete("/services/:id", verifyPartnerToken, partnerServiceController.deleteService)
-// Set Service Availability
+
 router.patch("/availability", verifyPartnerToken, partnerServiceController.setAvailability);
 
-
-// ===================== SUB SERVICES CRUD =====================//
-
-// Create SubService
-router.post(
-  "/sub-services",
-  verifyPartnerToken,
-  upload.single("image"),
-  partnerSubServiceController.createSubService
-);
-
-// Get All SubServices (supports ?serviceId=&gender= filters)
-router.get(
-  "/sub-services",
-  verifyToken,
-  partnerSubServiceController.getSubServices
-);
-
-// Get SubService By Id
-router.get(
-  "/sub-services/:id",
-  verifyPartnerToken,
-  partnerSubServiceController.getSubServiceById
-);
-
-
-// Update SubService
-router.put(
-  "/sub-services/:id",
-  verifyPartnerToken,
-  upload.single("image"),
-  partnerSubServiceController.updateSubService
-);
-
-// Soft Delete SubService
-router.delete(
-  "/sub-services/:id",
-  verifyPartnerToken,
-  partnerSubServiceController.deleteSubService
-);
 
 // ===================== BOOKINGS=======================//
 

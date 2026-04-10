@@ -6,101 +6,54 @@ const limitService = require("../services/limitService");
    CUSTOMER SIDE API
    User service book karta hai
 ===================================================== */
-const { checkSlotAvailability } = require("../services/slotService");
-
 exports.createBooking = async (req, res) => {
   try {
-    const {
-      partnerId,
-      providerId,
-      userId,
-      serviceId,
-      bookingDate,
-      startTime,
-      endTime,
-    } = req.body;
+    const { partnerId, providerId, userId, serviceId, bookingDate } = req.body;
 
-    // ✅ Basic validation
-    if (
-      !partnerId ||
-      !providerId ||
-      !userId ||
-      !serviceId ||
-      !bookingDate ||
-      !startTime ||
-      !endTime
-    ) {
+    // Validation
+    if (!partnerId || !providerId || !userId || !serviceId || !bookingDate) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
       });
     }
 
-    // ✅ 🔥 SLOT CHECK (single function)
-    const slotCheck = await checkSlotAvailability({
-      providerId,
-      bookingDate,
-      startTime,
-      endTime,
-    });
+    // ✅ Step 1: Check if customer is NEW (has no successful bookings with this partner)
+    const isNewCustomer = await limitService.isNewCustomerForPartner(partnerId, userId);
 
-    if (!slotCheck.available) {
-      return res.status(400).json({
-        success: false,
-        message: slotCheck.message,
-      });
-    }
-
-    // ✅ Customer limit logic (same as yours)
-    const isNewCustomer = await limitService.isNewCustomerForPartner(
-      partnerId,
-      userId
-    );
-
+    // ✅ Step 2: If NEW customer, validate and add to unique customers list
     if (isNewCustomer) {
-      const isLimitReached = await limitService.isCustomerLimitReached(
-        partnerId
-      );
-
+      const isLimitReached = await limitService.isCustomerLimitReached(partnerId);
       if (isLimitReached) {
         return res.status(403).json({
           success: false,
-          message:
-            "Customer limit reached. Existing customers can still book.",
+          message: "Customer limit reached for this partner. Existing customers can still book.",
+          limitExceeded: true,
+          reason: "NEW_CUSTOMER_LIMIT_REACHED",
         });
       }
 
-      const wasAdded = await limitService.addUniqueCustomer(
-        partnerId,
-        userId
-      );
-
+      // Atomically add customer to unique list (only if limit allows)
+      const wasAdded = await limitService.addUniqueCustomer(partnerId, userId);
       if (!wasAdded) {
+        // Race condition: limit was reached between our check and atomic add
         return res.status(403).json({
           success: false,
-          message:
-            "Customer limit reached. Existing customers can still book.",
+          message: "Customer limit reached for this partner. Existing customers can still book.",
+          limitExceeded: true,
+          reason: "NEW_CUSTOMER_LIMIT_REACHED",
         });
       }
     }
 
-    // ✅ Create booking
-    const toMinutes = (time) => {
-      const [h, m] = time.split(":").map(Number);
-      return h * 60 + m;
-    };
-
+    // ✅ Step 3: Create booking (now safe for both new and existing customers)
     const booking = await Booking.create({
       partnerId,
       providerId,
       userId,
       serviceId,
-      bookingDate: new Date(bookingDate),
-      startTime,
-      endTime,
-      startMinutes: toMinutes(startTime),
-      endMinutes: toMinutes(endTime),
-      isNewCustomerBooking: isNewCustomer,
+      bookingDate,
+      isNewCustomerBooking: isNewCustomer, // Track if this booking was from a new customer
     });
 
     res.status(201).json({
@@ -108,10 +61,12 @@ exports.createBooking = async (req, res) => {
       message: "Booking created successfully",
       data: booking,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message || "Server Error",
+      message: "Server Error",
+      error: error.message,
     });
   }
 };

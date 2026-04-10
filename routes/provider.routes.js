@@ -32,7 +32,7 @@ router.use(requireRole("provider"));
 // =====================
 // AVAILABILITY
 // =====================
-router.post("/availability/:providerId", verifyToken, setAvailability);
+// router.post("/availability", setAvailability);
 // router.get("/availability", getAvailability);
 // router.put("/availability/:id", updateAvailability);
 // router.delete("/availability/:id", deleteAvailability);

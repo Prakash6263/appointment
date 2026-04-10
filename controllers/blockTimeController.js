@@ -5,18 +5,10 @@ const User = require("../models/User");
 const createBlockTime = async (req, res) => {
   try {
     const { providerId } = req.params;
-    const {
-      date,
-      startTime,
-      endTime,
-      reason,
-      isRecurring,
-      recurringPattern,
-    } = req.body;
-
+    const { date, startTime, endTime, reason, isRecurring, recurringPattern } = req.body;
     const { userId, userRole } = req;
 
-    // ✅ 1. Provider check
+    // Verify provider exists
     const provider = await User.findById(providerId);
     if (!provider || provider.role !== "provider") {
       return res.status(404).json({
@@ -25,18 +17,15 @@ const createBlockTime = async (req, res) => {
       });
     }
 
-    // ✅ 2. Authorization
-    if (
-      userRole !== "partner_admin" &&
-      userId.toString() !== providerId.toString()
-    ) {
+    // Authorization - only provider or admin can create block time
+    if (userRole !== "partner_admin" && userId !== providerId) {
       return res.status(403).json({
         success: false,
-        message: "Not authorized to create block time",
+        message: "Not authorized to create block time for this provider",
       });
     }
 
-    // ✅ 3. Required fields
+    // Validate required fields
     if (!date || !startTime || !endTime) {
       return res.status(400).json({
         success: false,
@@ -44,7 +33,7 @@ const createBlockTime = async (req, res) => {
       });
     }
 
-    // ✅ 4. Time format validation
+    // Validate time format (HH:mm)
     const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
     if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
       return res.status(400).json({
@@ -53,28 +42,21 @@ const createBlockTime = async (req, res) => {
       });
     }
 
-    // ✅ 5. Convert time to minutes
-    const toMinutes = (time) => {
-      const [h, m] = time.split(":").map(Number);
-      return h * 60 + m;
-    };
+    // Validate that end time is after start time
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const [endHour, endMin] = endTime.split(":").map(Number);
+    const startTotalMins = startHour * 60 + startMin;
+    const endTotalMins = endHour * 60 + endMin;
 
-    const start = toMinutes(startTime);
-    const end = toMinutes(endTime);
-
-    if (end <= start) {
+    if (endTotalMins <= startTotalMins) {
       return res.status(400).json({
         success: false,
         message: "End time must be after start time",
       });
     }
 
-    // 🔥 6. FIXED DATE PARSING (IMPORTANT)
-    // ❌ DO NOT USE new Date("YYYY-MM-DD")
-    const [year, month, day] = date.split("-").map(Number);
-
-    const blockDate = new Date(Date.UTC(year, month - 1, day));
-
+    // Parse date and ensure it's a valid date
+    const blockDate = new Date(date);
     if (isNaN(blockDate.getTime())) {
       return res.status(400).json({
         success: false,
@@ -82,42 +64,8 @@ const createBlockTime = async (req, res) => {
       });
     }
 
-    // ✅ 7. Day range for query
-    const startOfDay = new Date(blockDate);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(blockDate);
-    endOfDay.setUTCHours(23, 59, 59, 999);
-
-    // ✅ 8. Prevent overlapping block times
-    const existingBlocks = await BlockTime.find({
-      providerId,
-      date: { $gte: startOfDay, $lte: endOfDay },
-      status: "active",
-    });
-
-    for (const block of existingBlocks) {
-      const bStart = toMinutes(block.startTime);
-      const bEnd = toMinutes(block.endTime);
-
-      if (start < bEnd && end > bStart) {
-        return res.status(400).json({
-          success: false,
-          message: "Time slot overlaps with an existing block",
-        });
-      }
-    }
-
-    // ✅ 9. Recurring validation
-    if (isRecurring && !recurringPattern) {
-      return res.status(400).json({
-        success: false,
-        message: "recurringPattern is required when isRecurring is true",
-      });
-    }
-
-    // ✅ 10. Create block
-    const blockTime = await BlockTime.create({
+    // Create block time record
+    const blockTime = new BlockTime({
       providerId,
       date: blockDate,
       startTime,
@@ -128,12 +76,13 @@ const createBlockTime = async (req, res) => {
       status: "active",
     });
 
+    await blockTime.save();
+
     res.status(201).json({
       success: true,
       message: "Block time created successfully",
       data: blockTime,
     });
-
   } catch (error) {
     console.error("Create block time error:", error);
     res.status(500).json({

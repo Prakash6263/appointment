@@ -9,9 +9,6 @@ const router = express.Router()
 router.use(verifyToken)
 
 // ===================== PROVIDER AVAILABILITY ROUTES =====================
-// Set provider availability
-router.post("/:providerId", availabilityController.setAvailability)
-
 // Get provider availability
 router.get("/:providerId", availabilityController.getAvailability)
 
@@ -38,6 +35,6 @@ router.get("/:providerId/block-times/date", blockTimeController.getBlockTimesByD
 router.put("/:providerId/block-time/:blockTimeId", blockTimeController.updateBlockTime)
 
 // Delete block time
-router.delete("/:providerId/block-time/:blockTimeId", verifyToken, blockTimeController.deleteBlockTime)
+router.delete("/:providerId/block-time/:blockTimeId", blockTimeController.deleteBlockTime)
 
 module.exports = router

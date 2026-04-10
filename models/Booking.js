@@ -12,7 +12,7 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User", // better keep consistent with your User model
       required: true,
-      index: true,
+  
     },
 
     userId: {
@@ -31,7 +31,7 @@ const bookingSchema = new mongoose.Schema(
     bookingDate: {
       type: Date,
       required: true,
-      index: true,
+  
     },
 
     // ✅ SLOT (IMPORTANT 🔥)

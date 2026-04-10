@@ -6,7 +6,6 @@ const subServiceSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Service",
       required: true,
-      index: true,
     },
 
     partnerId: {
@@ -18,7 +17,7 @@ const subServiceSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       required: true,
-      index: true,
+      
     },
     name: {
       type: String,

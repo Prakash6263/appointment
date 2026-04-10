@@ -3,6 +3,7 @@ const mongoose = require("mongoose")
 const cors = require("cors")
 require("dotenv").config()
 const path = require("path");
+const Service = require("./models/Service"); // ✅ import
 
 
 
@@ -26,7 +27,6 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB connection error:", err))
 
-const Service = require("./models/Service"); // ✅ import
 
 // async function updateCategory() {
 //   try {

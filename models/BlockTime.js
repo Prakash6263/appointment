@@ -6,12 +6,12 @@ const blockTimeSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
+     
     },
     date: {
       type: Date,
       required: true,
-      index: true,
+     
     },
     startTime: {
       type: String,
@@ -42,7 +42,7 @@ const blockTimeSchema = new mongoose.Schema(
       type: String,
       enum: ["active", "cancelled"],
       default: "active",
-      index: true,
+      
     },
   },
   { timestamps: true }
@@ -51,7 +51,5 @@ const blockTimeSchema = new mongoose.Schema(
 // Index for efficient querying of provider's blocks on a specific date
 blockTimeSchema.index({ providerId: 1, date: 1, status: 1 });
 
-// Index for date range queries
-blockTimeSchema.index({ providerId: 1, date: 1 });
 
 module.exports = mongoose.model("BlockTime", blockTimeSchema);

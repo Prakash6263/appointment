@@ -148,8 +148,8 @@ const getServiceProviders = async (req, res) => {
 // =====================================================
 const getProviderServices = async (req, res) => {
   try {
-    const { providerId  } = req.params;
-const { gender } = req.query;
+    const { providerId } = req.params;
+
     // Verify provider exists and is active
     const provider = await Provider.findOne({
       _id: providerId,
@@ -163,35 +163,17 @@ const { gender } = req.query;
         message: "Provider not found or inactive",
       });
     }
-const filter = {
-  providers: providerId,
-  isActive: true,
-  isDeleted: false,
-};
 
-if (gender) {
-  const genderMap = {
-    male: "men",
-    female: "women",
-    men: "men",
-    women: "women",
-    unisex: "unisex",
-  };
-
-  const normalizedGender = genderMap[gender.toLowerCase().trim()];
-
-  if (normalizedGender) {
-    filter.gender = normalizedGender;
-  }
-}
-
-const services = await Service.find(filter)
-  .populate("partnerId", "name email phone city website")
-  .populate("categoryId", "name icon")
-  .lean();
     // Get all services assigned to this provider
+    const services = await Service.find({
+      providers: providerId,
+      isActive: true,
+      isDeleted: false,
+    })
+      .populate("partnerId", "name email phone city website")
+      .populate("categoryId", "name icon")
+      .lean();
 
-    
     return res.json({
       success: true,
       providerId,

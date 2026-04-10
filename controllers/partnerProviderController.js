@@ -226,7 +226,6 @@ exports.createProvider = async (req, res) => {
       description,
       profileImage,
       status: "ACTIVE",
-      isEmailVerified: true, // Auto-verify email for partner-created providers
 
       // ⭐ IMPORTANT (ensure always present)
       averageRating: 0,

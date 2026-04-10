@@ -116,7 +116,6 @@ exports.getServices = async (req, res) => {
     const filter = { partnerId, isDeleted: false };
     if (categoryId) filter.categoryId = categoryId;
     if (isActive !== undefined) filter.isActive = isActive === "true";
-    
 
     const services = await Service.find(filter)
       .populate("categoryId", "name isActive")

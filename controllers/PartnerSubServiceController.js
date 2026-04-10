@@ -1,5 +1,5 @@
 const Service = require("../models/Service");
-const SubService = require("../models/subService");
+const SubService = require("../models/SubService");
 // ===================== CREATE SUB SERVICE ===================== //
 exports.createSubService = async (req, res) => {
   try {

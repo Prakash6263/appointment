@@ -28,28 +28,30 @@ const getServicesByCity = async (req, res) => {
   try {
     const { city } = req.query;
 
-    if (!city) {
-      return res.status(400).json({
-        success: false,
-        message: "City is required",
-      });
+    let services = [];
+
+    if (city) {
+      // ✅ Step 1: find partners in that city
+      const partners = await Partner.find({ city });
+
+      const partnerIds = partners.map((p) => p._id);
+
+      // ✅ Step 2: find services of those partners
+      services = await Service.find({
+        partnerId: { $in: partnerIds },
+        isActive: true,
+      }).populate("partnerId");
+    } else {
+      // ✅ No city selected → return ALL services
+      services = await Service.find({ isActive: true })
+        .populate("partnerId");
     }
-
-    // ✅ Step 1: find partners in that city
-    const partners = await Partner.find({ city });
-
-    const partnerIds = partners.map((p) => p._id);
-
-    // ✅ Step 2: find services of those partners
-    const services = await Service.find({
-      partnerId: { $in: partnerIds },
-      isActive: true,
-    }).populate("partnerId"); // optional (for company name etc)
 
     res.json({
       success: true,
       data: services,
     });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({

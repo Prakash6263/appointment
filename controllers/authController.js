@@ -5,6 +5,7 @@ const { generateOTP, getOTPExpiration } = require("../utils/otpUtils")
 const jwt = require("jsonwebtoken")
 const fs = require("fs")
 const path = require("path")
+const bcrypt = require("bcryptjs/dist/bcrypt")
 
 // Signup Controller
 exports.signup = async (req, res) => {
@@ -180,9 +181,10 @@ exports.resendOTP = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password, role } = req.body
-
+console.log(req.body)
     // Find user
     const user = await User.findOne({ email, role }).select("+password")
+    console.log(user)
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -206,7 +208,9 @@ exports.login = async (req, res) => {
         message: "Invalid credentials",
       })
     }
-
+    const isMatch = await bcrypt.compare("123456", user.password);
+console.log("Manual Match:", isMatch);
+// console.log("isPasswordValid",isPasswordValid)
     // Generate JWT token
     const token = jwt.sign({ userId: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE || "7d",

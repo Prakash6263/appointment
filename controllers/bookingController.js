@@ -11,82 +11,42 @@ const { checkSlotAvailability } = require("../services/slotService");
 exports.createBooking = async (req, res) => {
   try {
     const {
-      partnerId,
-      providerId,
-      userId,
-      serviceId,
-      bookingDate,
-      startTime,
-      endTime,
+      partnerId, providerId, userId, serviceId,
+      bookingDate, startTime, endTime,
     } = req.body;
 
-    // ✅ Basic validation
-    if (
-      !partnerId ||
-      !providerId ||
-      !userId ||
-      !serviceId ||
-      !bookingDate ||
-      !startTime ||
-      !endTime
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
+    // Basic validation
+    if (!partnerId || !providerId || !userId || !serviceId || !bookingDate || !startTime || !endTime) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    // ✅ 🔥 SLOT CHECK (single function)
-    const slotCheck = await checkSlotAvailability({
-      providerId,
-      bookingDate,
-      startTime,
-      endTime,
-    });
-
+    // Slot check
+    const slotCheck = await checkSlotAvailability({ providerId, bookingDate, startTime, endTime });
     if (!slotCheck.available) {
-      return res.status(400).json({
-        success: false,
-        message: slotCheck.message,
-      });
+      return res.status(400).json({ success: false, message: slotCheck.message });
     }
 
-    // ✅ Customer limit logic (same as yours)
-    const isNewCustomer = await limitService.isNewCustomerForPartner(
-      partnerId,
-      userId
-    );
-
+    // Customer limit logic
+    const isNewCustomer = await limitService.isNewCustomerForPartner(partnerId, userId);
     if (isNewCustomer) {
-      const isLimitReached = await limitService.isCustomerLimitReached(
-        partnerId
-      );
-
+      const isLimitReached = await limitService.isCustomerLimitReached(partnerId);
       if (isLimitReached) {
-        return res.status(403).json({
-          success: false,
-          message:
-            "Customer limit reached. Existing customers can still book.",
-        });
+        return res.status(403).json({ success: false, message: "Customer limit reached. Existing customers can still book." });
       }
-
-      const wasAdded = await limitService.addUniqueCustomer(
-        partnerId,
-        userId
-      );
-
+      const wasAdded = await limitService.addUniqueCustomer(partnerId, userId);
       if (!wasAdded) {
-        return res.status(403).json({
-          success: false,
-          message:
-            "Customer limit reached. Existing customers can still book.",
-        });
+        return res.status(403).json({ success: false, message: "Customer limit reached. Existing customers can still book." });
       }
     }
 
-    // ✅ Create booking
+    // 🔧 Normalise bookingDate to UTC midnight
+    let cleanDateStr = bookingDate;
+    if (cleanDateStr.includes('T')) cleanDateStr = cleanDateStr.split('T')[0];
+    const [year, month, day] = cleanDateStr.split('-').map(Number);
+    const bookingDateUTC = new Date(Date.UTC(year, month - 1, day));
+
     const toMinutes = (time) => {
-      const [h, m] = time.split(":").map(Number);
+      const [h, m] = time.split(':').map(Number);
       return h * 60 + m;
     };
 
@@ -95,7 +55,7 @@ exports.createBooking = async (req, res) => {
       providerId,
       userId,
       serviceId,
-      bookingDate: new Date(bookingDate),
+      bookingDate: bookingDateUTC,   // ✅ stored as 2026-04-10T00:00:00.000Z
       startTime,
       endTime,
       startMinutes: toMinutes(startTime),
@@ -103,31 +63,22 @@ exports.createBooking = async (req, res) => {
       isNewCustomerBooking: isNewCustomer,
     });
 
-    res.status(201).json({
-      success: true,
-      message: "Booking created successfully",
-      data: booking,
-    });
+    res.status(201).json({ success: true, message: "Booking created successfully", data: booking });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message || "Server Error",
-    });
+    res.status(500).json({ success: false, message: error.message || "Server Error" });
   }
 };
-
 
 /* =====================================================
    CUSTOMER SIDE API
    User apni sari bookings dekh sakta hai
 ===================================================== */
 exports.getUserBookings = async (req, res) => {
-    // console.log("req",req.userId)
+  // console.log("req",req.userId)
   try {
-
     // userId token se aa raha hai (verifyToken middleware se)
     const userId = req.userId;
-    
+
     const bookings = await Booking.find({ userId })
       .populate("serviceId")
       .populate("partnerId")
@@ -137,7 +88,6 @@ exports.getUserBookings = async (req, res) => {
       success: true,
       data: bookings,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -146,11 +96,10 @@ exports.getUserBookings = async (req, res) => {
   }
 };
 
-
 exports.getUserBookingById = async (req, res) => {
   try {
     const bookingId = req.params.id;
-console.log(bookingId)
+    console.log(bookingId);
     const booking = await Booking.findOne({
       _id: bookingId,
     })
@@ -180,7 +129,6 @@ console.log(bookingId)
 
 // get completed bookings of user for this service
 // controllers/bookingController.js
-
 
 exports.getCompleatedBooking = async (req, res) => {
   try {
@@ -235,9 +183,7 @@ exports.getCompleatedBooking = async (req, res) => {
    User booking cancel kar sakta hai
 ===================================================== */
 exports.cancelBooking = async (req, res) => {
-
   try {
-
     const { id } = req.params;
 
     const booking = await Booking.findById(id);
@@ -257,7 +203,6 @@ exports.cancelBooking = async (req, res) => {
       message: "Booking cancelled successfully",
       data: booking,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -313,7 +258,6 @@ exports.rescheduleBooking = async (req, res) => {
       message: "Booking rescheduled successfully",
       data: booking,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -328,11 +272,10 @@ exports.rescheduleBooking = async (req, res) => {
    status filter bhi laga sakta hai
 ===================================================== */
 
-
 exports.getTodayBookings = async (req, res) => {
   try {
     const providerId = req.user.id;
-console.log(providerId)
+    console.log(providerId);
     const provider = await Provider.findById(providerId);
     if (!provider) {
       return res.status(404).json({
@@ -377,7 +320,6 @@ console.log(providerId)
 ===================================================== */
 exports.confirmBooking = async (req, res) => {
   try {
-
     const { id } = req.params;
 
     const booking = await Booking.findById(id);
@@ -398,7 +340,6 @@ exports.confirmBooking = async (req, res) => {
       message: "Booking confirmed successfully",
       data: booking,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -407,14 +348,12 @@ exports.confirmBooking = async (req, res) => {
   }
 };
 
-
 /* =====================================================
    PARTNER SIDE API
    Service complete hone par booking complete karna
 ===================================================== */
 exports.completeBooking = async (req, res) => {
   try {
-
     const { id } = req.params;
 
     const booking = await Booking.findById(id);
@@ -435,7 +374,6 @@ exports.completeBooking = async (req, res) => {
       message: "Booking marked as completed",
       data: booking,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -444,14 +382,12 @@ exports.completeBooking = async (req, res) => {
   }
 };
 
-
 /* =====================================================
    ADMIN SIDE API
    Admin sari bookings dekh sakta hai
 ===================================================== */
 exports.getAllBookings = async (req, res) => {
   try {
-
     const bookings = await Booking.find()
       .populate("userId")
       .populate("partnerId")
@@ -462,7 +398,6 @@ exports.getAllBookings = async (req, res) => {
       success: true,
       data: bookings,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -471,14 +406,12 @@ exports.getAllBookings = async (req, res) => {
   }
 };
 
-
 /* =====================================================
    COMMON API
    Single booking details
 ===================================================== */
 exports.getBookingById = async (req, res) => {
   try {
-
     const { id } = req.params;
 
     const booking = await Booking.findById(id)
@@ -498,7 +431,6 @@ exports.getBookingById = async (req, res) => {
       success: true,
       data: booking,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,

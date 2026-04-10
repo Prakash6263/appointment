@@ -2,59 +2,22 @@ const mongoose = require("mongoose");
 
 const providerSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     partnerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Partner",
       required: true,
-      index: true,
     },
-
     name: {
       type: String,
-      // required: true,
-      trim: true,
     },
-
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-      index: true,
-    },
-
-    password: {
-      type: String,
-      required: true,
-    },
-
-    // ✅ Email Verification
-    isEmailVerified: {
-      type: Boolean,
-      default: false,
-    },
-
-    emailVerificationToken: {
-      type: String,
-      default: null,
-    },
-
-    emailVerificationExpires: {
-      type: Date,
-      default: null,
-    },
-
-    phone: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
     specialization: {
       type: String,
       trim: true,
-      index: true,
     },
 
     description: {
@@ -72,6 +35,7 @@ const providerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
     averageRating: {
       type: Number,
       default: 0,
@@ -81,17 +45,12 @@ const providerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
     status: {
       type: String,
       enum: ["ACTIVE", "INACTIVE"],
       default: "ACTIVE",
       index: true,
-    },
-
-    role: {
-      type: String,
-      enum: ["customer", "provider"],
-      default: "provider",
     },
 
     isDeleted: {

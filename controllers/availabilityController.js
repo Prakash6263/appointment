@@ -1,32 +1,84 @@
+const Booking = require("../models/Booking");
 const ProviderAvailability = require("../models/ProviderAvailability");
 const User = require("../models/User")
 
 // Get Provider Availability
+// const getAvailability = async (req, res) => {
+//   try {
+//     const { providerId } = req.params
+//     const { userId, userRole } = req
+
+//     // Check if provider exists
+//     const provider = await User.findById(providerId)
+//     if (!provider || provider.role !== "provider") {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Provider not found",
+//       })
+//     }
+
+//     // If not admin, can only view own availability
+//     if (userRole !== "partner_admin" && userId !== providerId) {
+//       return res.status(403).json({
+//         success: false,
+//         message: "Not authorized to view this provider's availability",
+//       })
+//     }
+
+//     let availability = await ProviderAvailability.findOne({ providerId })
+
+//     // If no availability found, create default one
+//     if (!availability) {
+//       const defaultDays = [
+//         { day: "Monday", enabled: true, start: "08:00", end: "16:00" },
+//         { day: "Tuesday", enabled: true, start: "08:00", end: "16:00" },
+//         { day: "Wednesday", enabled: true, start: "08:00", end: "16:00" },
+//         { day: "Thursday", enabled: true, start: "08:00", end: "16:00" },
+//         { day: "Friday", enabled: true, start: "08:00", end: "16:00" },
+//         { day: "Saturday", enabled: false, start: "08:00", end: "16:00" },
+//         { day: "Sunday", enabled: true, start: "08:00", end: "16:00" },
+//       ]
+
+//       availability = new ProviderAvailability({
+//         providerId,
+//         isOnlineAvailable: true,
+//         weeklySchedule: defaultDays,
+//       })
+
+//       await availability.save()
+//     }
+
+//     res.json({
+//       success: true,
+//       message: "Availability retrieved successfully",
+//       data: availability,
+//     })
+//   } catch (error) {
+//     console.error("Get availability error:", error)
+//     res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to get availability",
+//     })
+//   }
+// }
 const getAvailability = async (req, res) => {
   try {
-    const { providerId } = req.params
-    const { userId, userRole } = req
+    const { providerId } = req.params;
+    const { date } = req.query; // 👈 important
 
-    // Check if provider exists
-    const provider = await User.findById(providerId)
+    // ✅ Check provider exists
+    const provider = await User.findById(providerId);
+
     if (!provider || provider.role !== "provider") {
       return res.status(404).json({
         success: false,
         message: "Provider not found",
-      })
+      });
     }
 
-    // If not admin, can only view own availability
-    if (userRole !== "partner_admin" && userId !== providerId) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to view this provider's availability",
-      })
-    }
+    let availability = await ProviderAvailability.findOne({ providerId });
 
-    let availability = await ProviderAvailability.findOne({ providerId })
-
-    // If no availability found, create default one
+    // ✅ Create default if not exist
     if (!availability) {
       const defaultDays = [
         { day: "Monday", enabled: true, start: "08:00", end: "16:00" },
@@ -36,30 +88,47 @@ const getAvailability = async (req, res) => {
         { day: "Friday", enabled: true, start: "08:00", end: "16:00" },
         { day: "Saturday", enabled: false, start: "08:00", end: "16:00" },
         { day: "Sunday", enabled: true, start: "08:00", end: "16:00" },
-      ]
+      ];
 
-      availability = new ProviderAvailability({
+      availability = await ProviderAvailability.create({
         providerId,
         isOnlineAvailable: true,
         weeklySchedule: defaultDays,
-      })
-
-      await availability.save()
+      });
     }
 
-    res.json({
+    // 🔥 NEW: Get booked slots
+    let bookedSlots = [];
+
+    if (date) {
+      const bookings = await Booking.find({
+        providerId,
+        date,
+        status: { $ne: "cancelled" },
+      });
+
+      bookedSlots = bookings.map((b) => ({
+        startTime: b.startTime,
+        endTime: b.endTime,
+      }));
+    }
+
+    return res.json({
       success: true,
-      message: "Availability retrieved successfully",
-      data: availability,
-    })
+      data: availability,      // ✅ same as before
+      bookedSlots: bookedSlots // 🔥 new field
+    });
+
   } catch (error) {
-    console.error("Get availability error:", error)
-    res.status(500).json({
+    console.error("Get availability error:", error);
+
+    return res.status(500).json({
       success: false,
-      message: error.message || "Failed to get availability",
-    })
+      message: "Failed to get availability",
+    });
   }
-}
+};
+
 
 // Update Provider Availability
  const updateAvailability = async (req, res) => {

@@ -185,22 +185,19 @@ exports.createProvider = async (req, res) => {
       });
     }
 
-    // ================= DUPLICATE CHECK =================
-    const existingProvider = await Provider.findOne({
-      email,
-      partnerId: req.partnerId,
-      isDeleted: false,
-    });
+    // ================= DUPLICATE CHECK (USER) =================
+    const existingUser = await User.findOne({ email });
 
-    if (existingProvider) {
+    if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "Provider with this email already exists",
+        message: "User with this email already exists",
       });
     }
 
     // ================= PROVIDER LIMIT CHECK =================
     const isProviderLimitReached = await limitService.isProviderLimitReached(req.partnerId);
+
     if (isProviderLimitReached) {
       return res.status(403).json({
         success: false,
@@ -210,27 +207,37 @@ exports.createProvider = async (req, res) => {
     }
 
     // ================= FILE UPLOAD =================
-    const profileImage = req.files?.profileImage?.[0]?.path || "";
+        // ================= IMAGE =================
+    const file = req.files?.profileImage?.[0];
 
-    // ================= HASH PASSWORD =================
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const profileImage = file
+      ? `/uploads/${file.filename}`
+      : "";
+
+    console.log("IMAGE:", profileImage);
+
+ 
+    // ================= CREATE USER =================
+const user = await User.create({
+  name,
+  email,
+  phone,
+  password, // ✅ plain text
+  role: "provider",
+});
 
     // ================= CREATE PROVIDER =================
-    const provider = await Provider.create({
-      partnerId: req.partnerId,
-      name,
-      email,
-      phone,
-      password: hashedPassword,
-      specialization,
-      description,
-      profileImage,
-      status: "ACTIVE",
-
-      // ⭐ IMPORTANT (ensure always present)
-      averageRating: 0,
-      totalReviews: 0,
-    });
+const provider = await Provider.create({
+  userId: user._id,
+  partnerId: req.partnerId,
+  name, // ✅ ADD THIS
+  specialization,
+  description,
+  profileImage,
+  status: "ACTIVE",
+  averageRating: 0,
+  totalReviews: 0,
+});
 
     // ================= UPDATE PARTNER =================
     await Partner.findByIdAndUpdate(
@@ -239,16 +246,27 @@ exports.createProvider = async (req, res) => {
       { new: true }
     );
 
-    // ================= INCREMENT PROVIDER LIMIT =================
+    // ================= INCREMENT LIMIT =================
     await limitService.incrementUsedProviders(req.partnerId, 1);
 
-    // ================= REVERSE-LOOKUP SERVICES =================
-    const assignedServices = await Service.find({ providers: provider._id, isDeleted: false }).select("_id name price duration categoryId");
+    // ================= FETCH SERVICES =================
+    const assignedServices = await Service.find({
+      providers: provider._id,
+      isDeleted: false,
+    }).select("_id name price duration categoryId");
 
-    // ================= CLEAN RESPONSE =================
-    const providerResponse = provider.toObject();
-    delete providerResponse.password;
-    providerResponse.services = assignedServices;
+    // ================= RESPONSE =================
+    const providerResponse = {
+      _id: provider._id,
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      specialization,
+      description,
+      profileImage,
+      services: assignedServices,
+    };
 
     return res.status(201).json({
       success: true,

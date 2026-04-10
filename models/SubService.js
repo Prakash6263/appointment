@@ -1,30 +1,29 @@
 const mongoose = require("mongoose");
 
-const serviceSchema = new mongoose.Schema(
+const subServiceSchema = new mongoose.Schema(
   {
-    partnerId: {
+    serviceId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Partner",
+      ref: "Service",
       required: true,
       index: true,
     },
 
+    partnerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Partner",
+      required: true,
+    },
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       required: true,
       index: true,
     },
-
     name: {
       type: String,
       required: true,
       trim: true,
-    },
-
-    description: {
-      type: String,
-      required: true,
     },
 
     price: {
@@ -36,18 +35,23 @@ const serviceSchema = new mongoose.Schema(
     duration: {
       type: Number,
       required: true,
-      min: 1,
+      min: 30,
     },
 
-
-    averageRating: {
-      type: Number,
-      default: 0,
+    gender: {
+      type: String,
+      enum: ["men", "women", "unisex"],
+      default: "unisex",
     },
-
-    totalReviews: {
-      type: Number,
-      default: 0,
+    providers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Provider",
+      },
+    ],
+    image: {
+      type: String,
+      default: "",
     },
 
     isActive: {
@@ -63,9 +67,9 @@ const serviceSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// ✅ FIXED INDEX (remove subCategoryId & gender)
-serviceSchema.index(
-  { partnerId: 1, categoryId: 1, name: 1 },
+// 🔥 prevent duplicate types
+subServiceSchema.index(
+  { serviceId: 1, name: 1, gender: 1, partnerId: 1 },
   {
     unique: true,
     partialFilterExpression: { isDeleted: false },
@@ -73,4 +77,6 @@ serviceSchema.index(
   },
 );
 
-module.exports = mongoose.model("Service", serviceSchema);
+module.exports =
+  mongoose.models.SubService ||
+  mongoose.model("SubService", subServiceSchema);

@@ -8,14 +8,23 @@ const Category = require("../models/Category");
 // =====================
 exports.createService = async (req, res) => {
   try {
-    const { name, description, price, duration, categoryId, providers, gender } = req.body;
+    const { name, description, price, duration, categoryId, providers } =
+      req.body;
+
     const partnerId = req.partnerId;
 
-    // ── Validation ──
-    if (!name || !description || price === undefined || !duration || !categoryId) {
+    // ── 1. Validation ──
+    if (
+      !name ||
+      !description ||
+      price === undefined ||
+      !duration ||
+      !categoryId
+    ) {
       return res.status(400).json({
         success: false,
-        message: "name, description, price, duration, and categoryId are required",
+        message:
+          "name, description, price, duration, and categoryId are required",
       });
     }
 
@@ -26,7 +35,7 @@ exports.createService = async (req, res) => {
       });
     }
 
-    // ── Validate categoryId is a global active category ──
+    // ── 2. Validate category ──
     const category = await Category.findOne({
       _id: categoryId,
       isDeleted: false,
@@ -40,7 +49,7 @@ exports.createService = async (req, res) => {
       });
     }
 
-    // ── Prevent duplicate service name in same category ──
+    // ── 3. Prevent duplicate ──
     const duplicate = await Service.findOne({
       partnerId,
       categoryId,
@@ -51,32 +60,30 @@ exports.createService = async (req, res) => {
     if (duplicate) {
       return res.status(409).json({
         success: false,
-        message: "A service with this name already exists in the selected category",
+        message:
+          "A service with this name already exists in the selected category",
       });
     }
 
-    // ── Image handling ──
-    let imageUrl = "";
-    if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
-    }
-
-    // ── Parse providers (form-data sends it as a JSON string) ──
+    // ── 4. Parse providers ──
     let parsedProviders = [];
     if (providers) {
       try {
-        parsedProviders = typeof providers === "string" ? JSON.parse(providers) : providers;
-        if (!Array.isArray(parsedProviders)) parsedProviders = [parsedProviders];
+        parsedProviders =
+          typeof providers === "string" ? JSON.parse(providers) : providers;
+
+        if (!Array.isArray(parsedProviders)) {
+          parsedProviders = [parsedProviders];
+        }
       } catch {
-        return res.status(400).json({ success: false, message: "providers must be a valid JSON array" });
+        return res.status(400).json({
+          success: false,
+          message: "providers must be a valid JSON array",
+        });
       }
     }
 
-    // ── Normalise gender (accept "male"/"female" aliases) ──
-    const genderMap = { male: "men", female: "women", men: "men", women: "women", unisex: "unisex" };
-    const normalizedGender = genderMap[(gender || "unisex").toLowerCase()] || "unisex";
-
-    // ── Create service ──
+    // ── 6. Create service ──
     const service = await Service.create({
       partnerId,
       categoryId,
@@ -84,16 +91,15 @@ exports.createService = async (req, res) => {
       description,
       price: Number(price),
       duration: Number(duration),
-      image: imageUrl,
       providers: parsedProviders,
-      gender: normalizedGender,
       isActive: true,
+      isDeleted: false,
     });
 
     return res.status(201).json({
       success: true,
       message: "Service created successfully",
-      service,
+      data: service,
     });
   } catch (error) {
     console.error("Create service error:", error);
@@ -152,10 +158,11 @@ exports.getServiceById = async (req, res) => {
     const { id } = req.params;
     const partnerId = req.partnerId;
 
-    const service = await Service.findOne({ _id: id, partnerId, isDeleted: false }).populate(
-      "categoryId",
-      "name isActive"
-    );
+    const service = await Service.findOne({
+      _id: id,
+      partnerId,
+      isDeleted: false,
+    }).populate("categoryId", "name isActive");
 
     if (!service) {
       return res.status(404).json({
@@ -189,10 +196,22 @@ exports.updateService = async (req, res) => {
   try {
     const { id } = req.params;
     const partnerId = req.partnerId;
-    const { name, description, price, duration, categoryId, providers, gender, isActive } =
-      req.body;
+    const {
+      name,
+      description,
+      price,
+      duration,
+      categoryId,
+      providers,
+      gender,
+      isActive,
+    } = req.body;
 
-    const service = await Service.findOne({ _id: id, partnerId, isDeleted: false });
+    const service = await Service.findOne({
+      _id: id,
+      partnerId,
+      isDeleted: false,
+    });
     if (!service) {
       return res.status(404).json({
         success: false,
@@ -231,7 +250,8 @@ exports.updateService = async (req, res) => {
       if (duplicate) {
         return res.status(409).json({
           success: false,
-          message: "A service with this name already exists in the selected category",
+          message:
+            "A service with this name already exists in the selected category",
         });
       }
     }
@@ -257,27 +277,42 @@ exports.updateService = async (req, res) => {
     // ── Parse providers (form-data sends it as a JSON string) ──
     if (providers !== undefined) {
       try {
-        let parsedProviders = typeof providers === "string" ? JSON.parse(providers) : providers;
-        if (!Array.isArray(parsedProviders)) parsedProviders = [parsedProviders];
+        let parsedProviders =
+          typeof providers === "string" ? JSON.parse(providers) : providers;
+        if (!Array.isArray(parsedProviders))
+          parsedProviders = [parsedProviders];
         service.providers = parsedProviders;
       } catch {
-        return res.status(400).json({ success: false, message: "providers must be a valid JSON array" });
+        return res.status(400).json({
+          success: false,
+          message: "providers must be a valid JSON array",
+        });
       }
     }
 
     // ── Normalise gender (accept "male"/"female" aliases) ──
-    const genderMap = { male: "men", female: "women", men: "men", women: "women", unisex: "unisex" };
+    const genderMap = {
+      male: "men",
+      female: "women",
+      men: "men",
+      women: "women",
+      unisex: "unisex",
+    };
 
     if (name) service.name = name.trim();
     if (description) service.description = description;
     if (price !== undefined) service.price = Number(price);
     if (duration !== undefined) service.duration = Number(duration);
     if (gender) service.gender = genderMap[gender.toLowerCase()] || gender;
-    if (isActive !== undefined) service.isActive = isActive === "true" || isActive === true;
+    if (isActive !== undefined)
+      service.isActive = isActive === "true" || isActive === true;
 
     await service.save();
 
-    const updated = await Service.findById(service._id).populate("categoryId", "name isActive");
+    const updated = await Service.findById(service._id).populate(
+      "categoryId",
+      "name isActive",
+    );
     const obj = updated.toObject();
     obj.category = obj.categoryId;
     delete obj.categoryId;
@@ -305,7 +340,11 @@ exports.deleteService = async (req, res) => {
     const { id } = req.params;
     const partnerId = req.partnerId;
 
-    const service = await Service.findOne({ _id: id, partnerId, isDeleted: false });
+    const service = await Service.findOne({
+      _id: id,
+      partnerId,
+      isDeleted: false,
+    });
     if (!service) {
       return res.status(404).json({
         success: false,
@@ -341,7 +380,7 @@ exports.setAvailability = async (req, res) => {
     const partner = await Partner.findByIdAndUpdate(
       partnerId,
       { availability },
-      { new: true }
+      { new: true },
     );
 
     return res.status(200).json({

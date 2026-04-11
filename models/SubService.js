@@ -19,6 +19,7 @@ const subServiceSchema = new mongoose.Schema(
       required: true,
       
     },
+    
     name: {
       type: String,
       required: true,

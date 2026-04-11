@@ -1,5 +1,6 @@
 
 
+const { default: mongoose } = require("mongoose");
 const Booking = require("../models/Booking");
 const Review = require("../models/Review");
 const updateProviderRating = require("../utils/updateProviderRating");
@@ -7,13 +8,32 @@ const updateServiceRating = require("../utils/updateServiceRating");
 
 exports.createReview = async (req, res) => {
   try {
-    const { serviceId, bookingId, ratingService, ratingProvider, comment } = req.body;
+    const {
+      subServiceId,
+      bookingId,
+      ratingService,
+      ratingProvider,
+      comment,
+    } = req.body;
+
     const userId = req.userId;
 
     // ================= VALIDATIONS =================
-    if (!serviceId || !bookingId || !ratingService || !ratingProvider) {
+    if (!subServiceId || !bookingId || !ratingService || !ratingProvider) {
       return res.status(400).json({
-        message: "serviceId, bookingId and both rating are required",
+        success: false,
+        message: "subServiceId, bookingId and both ratings are required",
+      });
+    }
+
+    // ObjectId validation
+    if (
+      !mongoose.Types.ObjectId.isValid(subServiceId) ||
+      !mongoose.Types.ObjectId.isValid(bookingId)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid IDs",
       });
     }
 
@@ -23,7 +43,7 @@ exports.createReview = async (req, res) => {
       });
     }
 
-     if (ratingProvider < 1 || ratingProvider > 5) {
+    if (ratingProvider < 1 || ratingProvider > 5) {
       return res.status(400).json({
         message: "ratingProvider must be between 1 and 5",
       });
@@ -53,7 +73,13 @@ exports.createReview = async (req, res) => {
     }
 
     // ================= SERVICE MATCH =================
-    if (bookingData.serviceId.toString() !== serviceId) {
+    if (!bookingData.subServiceId) {
+      return res.status(400).json({
+        message: "Booking has no subServiceId",
+      });
+    }
+
+    if (bookingData.subServiceId.toString() !== subServiceId) {
       return res.status(400).json({
         message: "Service mismatch for this booking",
       });
@@ -71,25 +97,20 @@ exports.createReview = async (req, res) => {
       });
     }
 
-    // ================= GET PROVIDER =================
-    const providerId = bookingData.providerId;
-
     // ================= CREATE REVIEW =================
-const review = await Review.create({
-  user: userId,
-  provider: bookingData.providerId,
-  service: serviceId,
-  booking: bookingId,
-  ratingService,
-  ratingProvider,
-  comment,
-});
+    const review = await Review.create({
+      user: userId,
+      provider: bookingData.providerId,
+      service: subServiceId, // 🔥 now correct
+      booking: bookingId,
+      ratingService,
+      ratingProvider,
+      comment,
+    });
 
-    // ================= UPDATE SERVICE RATING =================
-    await updateServiceRating(serviceId);
-
-    // ================= UPDATE PROVIDER RATING =================
-    await updateProviderRating(providerId);
+    // ================= UPDATE RATINGS =================
+    await updateServiceRating(subServiceId);
+    await updateProviderRating(bookingData.providerId);
 
     // ================= UPDATE BOOKING =================
     bookingData.isReviewed = true;
@@ -101,6 +122,7 @@ const review = await Review.create({
       message: "Review added successfully",
       data: review,
     });
+
   } catch (error) {
     console.error("Create Review Error:", error);
 
@@ -128,7 +150,7 @@ exports.getServiceReviews = async (req, res) => {
 
     // ✅ Fetch reviews with user + provider
     const reviews = await Review.find({ service: serviceId })
-      .populate("user", "name")
+      .populate("user", "username")
       .populate("provider", "name") // ⭐ IMPORTANT
       .sort({ createdAt: -1 });
 

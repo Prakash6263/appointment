@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Booking = require("../models/Booking");
 const Provider = require("../models/Provider");
 const limitService = require("../services/limitService");
@@ -11,12 +12,12 @@ const { checkSlotAvailability } = require("../services/slotService");
 exports.createBooking = async (req, res) => {
   try {
     const {
-      partnerId, providerId, userId, serviceId,
+      partnerId, providerId, userId, subServiceId,
       bookingDate, startTime, endTime,
     } = req.body;
 
     // Basic validation
-    if (!partnerId || !providerId || !userId || !serviceId || !bookingDate || !startTime || !endTime) {
+    if (!partnerId || !providerId || !userId || !subServiceId || !bookingDate || !startTime || !endTime) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
@@ -54,7 +55,7 @@ exports.createBooking = async (req, res) => {
       partnerId,
       providerId,
       userId,
-      serviceId,
+      subServiceId,
       bookingDate: bookingDateUTC,   // ✅ stored as 2026-04-10T00:00:00.000Z
       startTime,
       endTime,
@@ -80,7 +81,7 @@ exports.getUserBookings = async (req, res) => {
     const userId = req.userId;
 
     const bookings = await Booking.find({ userId })
-      .populate("serviceId")
+      .populate("subServiceId")
       .populate("partnerId")
       .populate("providerId");
 
@@ -99,13 +100,19 @@ exports.getUserBookings = async (req, res) => {
 exports.getUserBookingById = async (req, res) => {
   try {
     const bookingId = req.params.id;
-    console.log(bookingId);
-    const booking = await Booking.findOne({
-      _id: bookingId,
-    })
+
+    if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking ID",
+      });
+    }
+
+    const booking = await Booking.findById(bookingId)
       .populate("partnerId")
       .populate("providerId")
-      .populate("serviceId");
+      .populate("userId")
+      .populate("subServiceId");
 
     if (!booking) {
       return res.status(404).json({
@@ -130,43 +137,56 @@ exports.getUserBookingById = async (req, res) => {
 // get completed bookings of user for this service
 // controllers/bookingController.js
 
-exports.getCompleatedBooking = async (req, res) => {
+
+exports.getCompletedBooking = async (req, res) => {
   try {
     const userId = req.userId;
-    const { serviceId } = req.query;
+    const { subServiceId } = req.query;
 
     // ✅ validation
-    if (!serviceId) {
+    if (!subServiceId) {
       return res.status(400).json({
         success: false,
-        message: "serviceId is required",
+        message: "subServiceId is required",
+      });
+    }
+
+    // ✅ ObjectId validation
+    if (!mongoose.Types.ObjectId.isValid(subServiceId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid subServiceId",
+      });
+    }
+
+    // ✅ check subService exists in DB
+    const subServiceExists = await mongoose
+      .model("SubService")
+      .findById(subServiceId);
+
+    if (!subServiceExists) {
+      return res.status(404).json({
+        success: false,
+        message: "SubService not found",
       });
     }
 
     // ✅ find bookings
     const bookings = await Booking.find({
       userId,
-      serviceId,
+      subServiceId, // ✅ correct field
       status: "COMPLETED",
     })
-      .sort({ createdAt: -1 }) // latest first
-      .select("_id serviceId bookingDate status");
+      .sort({ createdAt: -1 })
+      .select("_id subServiceId bookingDate status startTime endTime");
 
-    // ✅ no booking case
-    if (!bookings.length) {
-      return res.status(200).json({
-        success: true,
-        message: "No completed bookings found",
-        data: [],
-      });
-    }
-
-    // ✅ success response
+    // ✅ response
     return res.status(200).json({
       success: true,
       count: bookings.length,
       data: bookings,
     });
+
   } catch (error) {
     console.error("Get Booking Error:", error);
 

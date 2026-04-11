@@ -10,7 +10,7 @@ const bookingSchema = new mongoose.Schema(
 
     providerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // better keep consistent with your User model
+      ref: "Provider", // better keep consistent with your User model
       required: true,
   
     },
@@ -21,9 +21,9 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
 
-    serviceId: {
+    subServiceId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Service",
+      ref: "SubService",
       required: true,
     },
 

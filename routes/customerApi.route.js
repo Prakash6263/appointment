@@ -64,10 +64,10 @@ router.post("/createBooking", verifyToken, requireRole("customer"), bookingContr
 router.get("/userBookings", verifyToken, requireRole("customer"), bookingController.getUserBookings);
 
 // Get details of a specific booking
-router.get("/userBookingDetails/:id", verifyToken, requireRole("customer"), bookingController.getUserBookingById);
+router.get("/userBookings/:id", verifyToken, requireRole("customer"), bookingController.getUserBookingById);
 
 // Get my compleated booking with userId+serviceId
-router.get("/compleatedBooking", verifyToken, requireRole("customer"), bookingController.getCompleatedBooking);
+router.get("/completed-bookings", verifyToken, requireRole("customer"), bookingController.getCompletedBooking);
 
 // Cancel a booking
 router.put("/cancelBooking/:id", verifyToken, requireRole("customer"), bookingController.cancelBooking);

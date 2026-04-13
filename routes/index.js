@@ -19,6 +19,7 @@ const notificationRoutes = require("./notifications")
 const availabilityRoutes = require("./availability")
 const customerRoutes = require("./customerApi.route")
 const purchaseRoutes = require("./purchaseRoutes")
+const chatRoutes = require("./chat.routes")
 
 const router = express.Router()
 
@@ -73,6 +74,7 @@ router.use("/customer", customerRoutes);
 router.use("/notifications", notificationRoutes)
 router.use("/availability", availabilityRoutes)
 router.use("/purchase", purchaseRoutes)
+router.use("/chat", chatRoutes)
 
 
 

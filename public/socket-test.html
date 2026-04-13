@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.io Chat - Connection Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #4ec9b0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 16px;
+        }
+
+        .card h2 {
+            color: #569cd6;
+            font-size: 16px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #3e3e42;
+            padding-bottom: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: #858585;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            background: #3c3c3c;
+            border: 1px solid #3e3e42;
+            color: #d4d4d4;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #007acc;
+            background: #3e3e42;
+        }
+
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #005a9e;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .button-group button {
+            margin-top: 0;
+        }
+
+        .console {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 12px;
+            height: 300px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            grid-column: 1 / -1;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            padding: 4px 0;
+            border-bottom: 1px solid #2d2d30;
+        }
+
+        .log-entry.info {
+            color: #4ec9b0;
+        }
+
+        .log-entry.success {
+            color: #6a9955;
+        }
+
+        .log-entry.error {
+            color: #f48771;
+        }
+
+        .log-entry.warning {
+            color: #dcdcaa;
+        }
+
+        .status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status.connected {
+            background: #6a9955;
+            box-shadow: 0 0 6px rgba(106, 153, 85, 0.5);
+        }
+
+        .status.disconnected {
+            background: #f48771;
+        }
+
+        .status.connecting {
+            background: #dcdcaa;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            font-size: 12px;
+            color: #858585;
+        }
+
+        .footer {
+            text-align: center;
+            color: #858585;
+            font-size: 11px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #3e3e42;
+        }
+
+        .step {
+            background: #1e1e1e;
+            border-left: 3px solid #007acc;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 3px;
+        }
+
+        .step-title {
+            color: #569cd6;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .step-desc {
+            color: #858585;
+            font-size: 11px;
+        }
+
+        @media (max-width: 768px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 Socket.io Chat - Connection Tester</h1>
+
+        <div class="test-grid">
+            <!-- Left Panel: Connection Test -->
+            <div class="card">
+                <h2>🔗 Connection Test</h2>
+                
+                <div class="input-group">
+                    <label>Server URL</label>
+                    <input type="text" id="serverUrl" value="http://localhost:5000">
+                </div>
+
+                <div class="button-group">
+                    <button onclick="connectSocket()">Connect</button>
+                    <button onclick="disconnectSocket()" style="background: #d7534a;">Disconnect</button>
+                </div>
+
+                <div class="status-bar">
+                    <span class="status disconnected" id="statusDot"></span>
+                    <span id="statusText">Disconnected</span>
+                </div>
+
+                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #3e3e42;">
+                    <label style="color: #569cd6;">Socket ID</label>
+                    <input type="text" id="socketId" readonly value="Not connected">
+                </div>
+            </div>
+
+            <!-- Right Panel: User Config -->
+            <div class="card">
+                <h2>👤 User Configuration</h2>
+                
+                <div class="input-group">
+                    <label>User Type</label>
+                    <select id="userType" onchange="updateUserConfig()">
+                        <option value="user">Customer</option>
+                        <option value="provider">Provider</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>User ID</label>
+                    <input type="text" id="userId" value="user_001" onchange="updateUserConfig()">
+                </div>
+
+                <div class="input-group">
+                    <label>User Name</label>
+                    <input type="text" id="userName" value="Jenny Wilson" onchange="updateUserConfig()">
+                </div>
+
+                <button onclick="joinChat()">Join Chat</button>
+            </div>
+
+            <!-- Message Testing -->
+            <div class="card">
+                <h2>💬 Send Test Message</h2>
+                
+                <div class="input-group">
+                    <label>Chat ID / Receiver ID</label>
+                    <input type="text" id="chatId" value="provider_001">
+                </div>
+
+                <div class="input-group">
+                    <label>Message</label>
+                    <textarea id="messageText" placeholder="Type your test message..." style="resize: vertical; height: 60px;">Hello! This is a test message.</textarea>
+                </div>
+
+                <button onclick="sendTestMessage()">Send Message</button>
+            </div>
+
+            <!-- Event Listener -->
+            <div class="card">
+                <h2>📡 Listen to Events</h2>
+                
+                <div class="step">
+                    <div class="step-title">receive-message</div>
+                    <div class="step-desc">Listen for incoming messages from other users</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">user-online</div>
+                    <div class="step-desc">User came online</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-title">user-offline</div>
+                    <div class="step-desc">User went offline</div>
+                </div>
+
+                <button onclick="toggleEventListeners()">Toggle Event Listeners</button>
+            </div>
+
+            <!-- Console Output -->
+            <div class="console" id="console">
+                <div class="log-entry info">[INFO] Socket.io Chat Tester initialized</div>
+                <div class="log-entry warning">[READY] Configure and connect above ↑</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>📖 Open <strong>provider-chat.html</strong> or <strong>user-chat.html</strong> to test real messaging</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script>
+        // Global state
+        let socket = null;
+        let isListening = false;
+
+        // Configuration
+        let config = {
+            userType: 'user',
+            userId: 'user_001',
+            userName: 'Jenny Wilson',
+            serverUrl: 'http://localhost:5000'
+        };
+
+        // Logger
+        const Logger = {
+            log: (message, type = 'info') => {
+                const console = document.getElementById('console');
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                const timestamp = new Date().toLocaleTimeString();
+                entry.textContent = `[${timestamp}] ${message}`;
+                console.appendChild(entry);
+                console.scrollTop = console.scrollHeight;
+            },
+            info: (msg) => Logger.log(msg, 'info'),
+            success: (msg) => Logger.log(msg, 'success'),
+            error: (msg) => Logger.log(msg, 'error'),
+            warning: (msg) => Logger.log(msg, 'warning'),
+        };
+
+        // Update status display
+        function updateStatus(status) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            
+            dot.className = `status ${status}`;
+            if (status === 'connected') {
+                text.textContent = 'Connected';
+            } else if (status === 'connecting') {
+                text.textContent = 'Connecting...';
+            } else {
+                text.textContent = 'Disconnected';
+            }
+        }
+
+        // Update user config
+        function updateUserConfig() {
+            config.userType = document.getElementById('userType').value;
+            config.userId = document.getElementById('userId').value;
+            config.userName = document.getElementById('userName').value;
+            config.serverUrl = document.getElementById('serverUrl').value;
+            Logger.info(`Config updated: ${config.userType} - ${config.userName}`);
+        }
+
+        // Connect socket
+        function connectSocket() {
+            if (socket && socket.connected) {
+                Logger.warning('Already connected');
+                return;
+            }
+
+            updateUserConfig();
+            updateStatus('connecting');
+            Logger.info(`Connecting to ${config.serverUrl}...`);
+
+            socket = io(config.serverUrl, {
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionDelayMax: 5000,
+                reconnectionAttempts: 5
+            });
+
+            socket.on('connect', () => {
+                updateStatus('connected');
+                document.getElementById('socketId').value = socket.id;
+                Logger.success(`Connected! Socket ID: ${socket.id}`);
+            });
+
+            socket.on('disconnect', () => {
+                updateStatus('disconnected');
+                Logger.warning('Disconnected from server');
+            });
+
+            socket.on('connect_error', (error) => {
+                Logger.error(`Connection error: ${error.message}`);
+                updateStatus('disconnected');
+            });
+
+            socket.on('error', (error) => {
+                Logger.error(`Socket error: ${error}`);
+            });
+        }
+
+        // Disconnect socket
+        function disconnectSocket() {
+            if (!socket) {
+                Logger.warning('Not connected');
+                return;
+            }
+            socket.disconnect();
+            updateStatus('disconnected');
+            Logger.info('Disconnected from server');
+        }
+
+        // Join chat
+        function joinChat() {
+            if (!socket || !socket.connected) {
+                Logger.error('Socket not connected. Connect first!');
+                return;
+            }
+
+            updateUserConfig();
+            socket.emit('user-join', {
+                userId: config.userId,
+                userType: config.userType,
+                userName: config.userName
+            });
+
+            Logger.success(`${config.userType} "${config.userName}" joined chat`);
+        }
+
+        // Send test message
+        function sendTestMessage() {
+            if (!socket || !socket.connected) {
+                Logger.error('Socket not connected');
+                return;
+            }
+
+            const message = document.getElementById('messageText').value.trim();
+            const chatId = document.getElementById('chatId').value;
+
+            if (!message) {
+                Logger.warning('Message is empty');
+                return;
+            }
+
+            updateUserConfig();
+
+            socket.emit('send-message', {
+                chatId: chatId,
+                senderId: config.userId,
+                senderType: config.userType,
+                senderName: config.userName,
+                receiverId: chatId,
+                message: message,
+                timestamp: new Date()
+            });
+
+            Logger.success(`Message sent to ${chatId}: "${message}"`);
+            document.getElementById('messageText').value = '';
+        }
+
+        // Toggle event listeners
+        function toggleEventListeners() {
+            if (!socket || !socket.connected) {
+                Logger.error('Socket not connected');
+                return;
+            }
+
+            if (isListening) {
+                socket.off('receive-message');
+                socket.off('user-online');
+                socket.off('user-offline');
+                socket.off('user-typing');
+                isListening = false;
+                Logger.warning('Event listeners disabled');
+            } else {
+                socket.on('receive-message', (data) => {
+                    Logger.info(`📩 Received: "${data.message}" from ${data.senderName}`);
+                });
+
+                socket.on('user-online', (data) => {
+                    Logger.success(`✅ ${data.userName} is online`);
+                });
+
+                socket.on('user-offline', (data) => {
+                    Logger.warning(`❌ ${data.userName} is offline`);
+                });
+
+                socket.on('user-typing', (data) => {
+                    Logger.info(`✍️ ${data.userName} is typing...`);
+                });
+
+                isListening = true;
+                Logger.success('Event listeners enabled');
+            }
+        }
+
+        // Initialize
+        Logger.info('Socket.io Chat Tester loaded');
+        Logger.info('Configure settings and click "Connect" to start');
+    </script>
+</body>
+</html>

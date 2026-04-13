@@ -3,19 +3,25 @@ const mongoose = require("mongoose")
 const cors = require("cors")
 require("dotenv").config()
 const path = require("path");
-const Service = require("./models/Service"); // ✅ import
-
-
+const http = require("http");
+const Service = require("./models/Service");
+const initializeSocket = require("./socket");
 
 const routes = require("./routes")
 
 const app = express()
 
+// Create HTTP server for Socket.io
+const server = http.createServer(app);
+
+// Initialize Socket.io with JWT authentication
+const io = initializeSocket(server);
+
 // Middlewares
 app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // MongoDB Connections
@@ -46,7 +52,7 @@ app.use("/api", routes)
 
 // Health check
 app.get("/health", (req, res) => {
-  res.json({ status: "API is running for testss" })
+  res.json({ status: "API is running" })
 })
 
 // Error handling middleware
@@ -59,6 +65,6 @@ app.use((err, req, res, next) => {
 })
 
 const PORT = process.env.PORT || 5000
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })

@@ -1,0 +1,267 @@
+{
+  "info": {
+    "_postman_id": "chat-api-collection-v1",
+    "name": "Chat API Collection",
+    "description": "Real-time Chat API with Socket.io integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Chat Messages",
+      "item": [
+        {
+          "name": "Get Chat Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/messages/:chatId",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chat",
+                "messages",
+                ":chatId"
+              ],
+              "variable": [
+                {
+                  "key": "chatId",
+                  "value": "chat_provider123_user456"
+                }
+              ]
+            },
+            "description": "Fetch all messages for a specific chat"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Chat History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/history/:userId1/:userId2",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chat",
+                "history",
+                ":userId1",
+                ":userId2"
+              ],
+              "variable": [
+                {
+                  "key": "userId1",
+                  "value": "provider123"
+                },
+                {
+                  "key": "userId2",
+                  "value": "user456"
+                }
+              ]
+            },
+            "description": "Get entire conversation history between two users"
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Message as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"read\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/chat/messages/:messageId/read",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chat",
+                "messages",
+                ":messageId",
+                "read"
+              ],
+              "variable": [
+                {
+                  "key": "messageId",
+                  "value": "507f1f77bcf86cd799439011"
+                }
+              ]
+            },
+            "description": "Mark a specific message as read"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/messages/:messageId",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chat",
+                "messages",
+                ":messageId"
+              ],
+              "variable": [
+                {
+                  "key": "messageId",
+                  "value": "507f1f77bcf86cd799439011"
+                }
+              ]
+            },
+            "description": "Delete a specific message from the chat"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unread Message Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/unread/:userId",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chat",
+                "unread",
+                ":userId"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "provider123"
+                }
+              ]
+            },
+            "description": "Get count of unread messages for a specific user"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Socket.io Events",
+      "item": [
+        {
+          "name": "Socket Events Documentation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Socket.io events are real-time and don't use HTTP requests. Use the HTML files to test:\n\n**Client → Server Events:**\n1. user-join\n   - Data: { userId, userType, userName }\n   - Emits: user-online event to all clients\n\n2. send-message\n   - Data: { chatId, senderId, senderType, senderName, receiverId, message, timestamp }\n   - Emits: receive-message event to all clients\n\n3. typing\n   - Data: { chatId, userName, userType }\n   - Broadcasts: user-typing event\n\n4. stop-typing\n   - Data: { chatId }\n   - Broadcasts: user-stop-typing event\n\n**Server → Client Events:**\n1. receive-message\n   - Returns: Full message object with metadata\n\n2. user-online\n   - Returns: User info and list of all online users\n\n3. user-offline\n   - Returns: User info who went offline\n\n4. user-typing\n   - Returns: Info about who is typing\n\n5. user-stop-typing\n   - Returns: Info about who stopped typing"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Test Endpoints",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Check if the server is running"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "chatId",
+      "value": "chat_provider123_user456",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "provider123",
+      "type": "string"
+    },
+    {
+      "key": "messageId",
+      "value": "507f1f77bcf86cd799439011",
+      "type": "string"
+    }
+  ]
+}

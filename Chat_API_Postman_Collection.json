@@ -17,6 +17,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "description": "JWT token from login"
               }
             ],
             "url": {
@@ -51,6 +56,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "url": {
@@ -90,6 +99,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "body": {
@@ -129,6 +142,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "url": {
@@ -163,6 +180,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
             "url": {
@@ -186,6 +207,116 @@
               ]
             },
             "description": "Get count of unread messages for a specific user"
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Chat as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/chat/:chatId/read-all",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chat",
+                "chat",
+                ":chatId",
+                "read-all"
+              ],
+              "variable": [
+                {
+                  "key": "chatId",
+                  "value": "provider123_user456"
+                }
+              ]
+            },
+            "description": "Mark all messages in a chat as read"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Customer Providers Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/stats/customer/providers-count",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chat",
+                "stats",
+                "customer",
+                "providers-count"
+              ]
+            },
+            "description": "Get count of unique providers a customer has chatted with"
+          },
+          "response": []
+        },
+        {
+          "name": "Provider Customers Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/stats/provider/customers-count",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chat",
+                "stats",
+                "provider",
+                "customers-count"
+              ]
+            },
+            "description": "Get count of unique customers a provider has chatted with"
           },
           "response": []
         }
@@ -249,8 +380,14 @@
       "type": "string"
     },
     {
+      "key": "jwt_token",
+      "value": "your_jwt_token_here",
+      "type": "string",
+      "description": "JWT token obtained from login endpoint. Required for all authenticated endpoints."
+    },
+    {
       "key": "chatId",
-      "value": "chat_provider123_user456",
+      "value": "provider123_user456",
       "type": "string"
     },
     {

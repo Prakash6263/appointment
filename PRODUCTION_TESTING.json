@@ -1,0 +1,167 @@
+{
+  "title": "Production-Ready Socket Chat - Testing Guide",
+  "prerequisites": {
+    "1_environment": "Ensure JWT_SECRET is set in .env file",
+    "2_mongodb": "MongoDB running and connected",
+    "3_server": "Server running on port 5000",
+    "4_token": "JWT token from login endpoint"
+  },
+  "socket_client_setup": {
+    "before": "Old way (no auth):\nconst socket = io('http://localhost:5000');",
+    "after": "New way (with JWT):\nconst socket = io('http://localhost:5000', { auth: { token: 'your_jwt_token' } });",
+    "important": "Without valid token, socket connection will be rejected with 'No token provided' error"
+  },
+  "test_scenarios": {
+    "scenario_1_socket_auth": {
+      "name": "Test JWT Authentication on Socket Connect",
+      "steps": [
+        "1. Try connecting without token -> Should fail with 'No token provided'",
+        "2. Try connecting with invalid token -> Should fail with 'Invalid token'",
+        "3. Try connecting with valid token -> Should succeed and log '[Socket] Token verified for user'"
+      ]
+    },
+    "scenario_2_room_based_messaging": {
+      "name": "Test Room-Based Communication (Not Global Broadcast)",
+      "steps": [
+        "1. Open 3 browser windows",
+        "2. Window 1: Provider (provider123) connects with token",
+        "3. Window 2: Customer (customer456) connects with token",
+        "4. Window 3: Another Provider (provider789) connects with token",
+        "5. Provider123 and Customer456 join same chat room via 'join-chat' event",
+        "6. Provider123 sends message to Customer456",
+        "7. Verify: Provider789 (in Window 3) DOES NOT receive the message",
+        "8. Verify: Only Provider123 and Customer456 receive it"
+      ],
+      "expected": "Messages are room-specific, not broadcast to all users"
+    },
+    "scenario_3_typing_indicator": {
+      "name": "Test Typing Indicator (Room-Only, Not Self)",
+      "steps": [
+        "1. Two users in same chat room",
+        "2. User A starts typing",
+        "3. User A should NOT see their own 'user-typing' event",
+        "4. User B should see User A typing",
+        "5. User A stops typing",
+        "6. User B should see 'user-stop-typing' event"
+      ]
+    },
+    "scenario_4_message_persistence": {
+      "name": "Test Message Saved to Database",
+      "steps": [
+        "1. Send message via socket",
+        "2. Check MongoDB Chat collection",
+        "3. Message should exist with: chatId, senderId, status='delivered'",
+        "4. Call GET /api/chat/messages/:chatId to retrieve",
+        "5. Message should appear in results"
+      ]
+    },
+    "scenario_5_delete_ownership": {
+      "name": "Test Delete Only Works for Sender",
+      "steps": [
+        "1. User A sends message",
+        "2. User A tries DELETE /api/chat/messages/:messageId -> Should succeed (200)",
+        "3. Send another message from User A",
+        "4. User B tries DELETE same message -> Should fail (403 Forbidden)",
+        "5. Error message should be 'Only sender can delete message'"
+      ]
+    },
+    "scenario_6_read_ownership": {
+      "name": "Test Read Only Works for Receiver",
+      "steps": [
+        "1. User A sends message to User B",
+        "2. User B tries PUT /api/chat/messages/:messageId/read -> Should succeed (200)",
+        "3. Message status should change to 'read'",
+        "4. User A tries to mark same message as read -> Should fail (403)",
+        "5. Error should be 'Only receiver can mark message as read'"
+      ]
+    },
+    "scenario_7_chat_access": {
+      "name": "Test User Can Only Access Their Own Chats",
+      "steps": [
+        "1. User A and User B chat",
+        "2. User C tries GET /api/chat/messages/userA_userB -> Should fail (403)",
+        "3. Error: 'You don't have access to this chat'",
+        "4. User A calls same endpoint -> Should succeed (200)"
+      ]
+    },
+    "scenario_8_analytics_customer": {
+      "name": "Test Analytics: Customer Providers Count",
+      "steps": [
+        "1. Customer sends messages to 3 different providers",
+        "2. Call GET /api/chat/stats/customer/providers-count with customer JWT",
+        "3. Response should be { totalProvidersChatted: 3 }",
+        "4. Add message from 4th provider",
+        "5. Call again -> Should return 4"
+      ],
+      "uses": "MongoDB aggregation for efficiency"
+    },
+    "scenario_9_analytics_provider": {
+      "name": "Test Analytics: Provider Customers Count",
+      "steps": [
+        "1. Provider receives messages from 5 different customers",
+        "2. Call GET /api/chat/stats/provider/customers-count with provider JWT",
+        "3. Response should be { totalCustomersChatted: 5 }"
+      ]
+    },
+    "scenario_10_unread_count": {
+      "name": "Test Unread Message Count",
+      "steps": [
+        "1. User B receives 5 unread messages",
+        "2. Call GET /api/chat/unread/:userId with User B JWT -> Should return 5",
+        "3. Mark 2 messages as read",
+        "4. Call again -> Should return 3"
+      ]
+    },
+    "scenario_11_mark_chat_read": {
+      "name": "Test Mark Entire Chat as Read",
+      "steps": [
+        "1. Chat has 10 unread messages for User B",
+        "2. Call PUT /api/chat/chat/:chatId/read-all with User B JWT",
+        "3. All 10 messages should be marked as read",
+        "4. GET /api/chat/unread/:userId should return 0 for that chat"
+      ]
+    }
+  },
+  "postman_testing": {
+    "1_setup": "Import Chat_API_Postman_Collection.json into Postman",
+    "2_variables": "Set {{jwt_token}} variable with valid token from your login endpoint",
+    "3_base_url": "{{base_url}} defaults to http://localhost:5000",
+    "4_test_flow": [
+      "1. Get unread count endpoint (no messages)",
+      "2. Create messages via socket",
+      "3. Get messages endpoint (should show new messages)",
+      "4. Mark message as read endpoint",
+      "5. Get analytics endpoints",
+      "6. Delete message endpoint (if you're sender)"
+    ]
+  },
+  "database_verification": {
+    "check_indexes": "db.chats.getIndexes() -> Should show 4 indexes",
+    "check_messages": "db.chats.findOne() -> Should have new fields: status, readAt, deliveredAt",
+    "check_aggregation": "Chat.aggregate([...]) for analytics endpoints"
+  },
+  "console_logging": {
+    "socket_logs": "Look for [Socket] prefix - shows socket events",
+    "service_logs": "Look for [Chat Service] prefix - shows DB operations",
+    "api_logs": "Look for [Chat API] prefix - shows REST API calls",
+    "example": "[Socket] User joined chat room: { userId, chatRoomId, socketId }"
+  },
+  "troubleshooting": {
+    "error_no_token": {
+      "cause": "Socket connection without auth token",
+      "fix": "Provide token in socket auth header"
+    },
+    "error_403_forbidden": {
+      "cause": "User trying to access/modify message they don't own",
+      "fix": "Only sender can delete, only receiver can mark read"
+    },
+    "error_user_not_in_chat": {
+      "cause": "User not part of chat room trying to access it",
+      "fix": "Only users in chatId can access messages"
+    },
+    "messages_not_saving": {
+      "cause": "Database connection issue",
+      "fix": "Check MongoDB connection in logs"
+    }
+  }
+}

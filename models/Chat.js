@@ -35,12 +35,28 @@ const chatSchema = new mongoose.Schema(
     read: {
       type: Boolean,
       default: false
+    },
+    status: {
+      type: String,
+      enum: ["pending", "delivered", "read"],
+      default: "pending"
+    },
+    readAt: {
+      type: Date,
+      default: null
+    },
+    deliveredAt: {
+      type: Date,
+      default: Date.now
     }
   },
   { timestamps: true }
 );
 
-// Create index for efficient chat queries
+// Create indexes for efficient chat queries
 chatSchema.index({ chatId: 1, timestamp: -1 });
+chatSchema.index({ receiverId: 1, read: 1 });
+chatSchema.index({ senderId: 1, receiverId: 1 });
+chatSchema.index({ chatId: 1, read: 1 });
 
 module.exports = mongoose.model("Chat", chatSchema);

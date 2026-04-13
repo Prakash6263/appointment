@@ -475,9 +475,9 @@
     <script>
         // Configuration
         const PROVIDER_CONFIG = {
-            userId: 'provider_001',
+            userId: '69d734fea77ec4ff093f2cd5',
             userType: 'provider',
-            userName: 'Speedy Chow',
+            userName: 'provider-1',
             socketUrl: 'http://localhost:5000' // Update this to your server URL
         };
 
@@ -489,7 +489,7 @@
 
         // Mock data for demo
         const mockUsers = [
-            { id: 'user_001', name: 'Jenny Wilson', avatar: 'JW' },
+            { id: '69d64ce7f8afd3e501560fd9', name: 'cutomer123', avatar: 'JW' },
             { id: 'user_002', name: 'Davis Siphron', avatar: 'DS' },
             { id: 'user_003', name: 'Aspen Herwich', avatar: 'AH' },
             { id: 'user_004', name: 'Cheyenne Kenter', avatar: 'CK' },
@@ -520,13 +520,20 @@
             socket.on('receive-message', (data) => {
                 console.log('[Provider] Received message:', data);
                 
+                // Determine chatId based on message direction
+                let chatId = data.chatId;
+                console.log('[v0] Message chatId:', chatId, 'SenderId:', data.senderId, 'ReceiverId:', data.receiverId);
+                
                 // Store message
-                const chatId = data.chatId || data.senderId;
-                if (!messages[chatId]) messages[chatId] = [];
+                if (!messages[chatId]) {
+                    messages[chatId] = [];
+                }
                 messages[chatId].push(data);
+                console.log('[v0] Total messages for', chatId, ':', messages[chatId].length);
 
                 // Update UI if this message is for current chat
                 if (currentChat && currentChat.id === chatId) {
+                    console.log('[v0] Displaying message for current chat:', chatId);
                     displayMessage(data);
                     scrollToBottom();
                 }
@@ -536,8 +543,16 @@
             });
 
             socket.on('user-typing', (data) => {
+                console.log('[Provider] Typing:', data);
                 if (currentChat && currentChat.id === data.chatId) {
-                    // Show typing indicator
+                    showTypingIndicator(data.userName);
+                }
+            });
+
+            socket.on('user-stop-typing', (data) => {
+                console.log('[Provider] Stop typing:', data);
+                if (currentChat && currentChat.id === data.chatId) {
+                    hideTypingIndicator();
                 }
             });
 
@@ -624,6 +639,13 @@
         // Display message
         function displayMessage(data) {
             const messagesArea = document.getElementById('messagesArea');
+            
+            // Remove empty state if it exists
+            const emptyState = messagesArea.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
             const isOwn = data.senderId === PROVIDER_CONFIG.userId;
 
             const messageGroup = document.createElement('div');
@@ -645,6 +667,35 @@
             messagesArea.appendChild(messageGroup);
         }
 
+        // Show typing indicator
+        function showTypingIndicator(userName) {
+            console.log('[v0] Showing typing indicator for:', userName);
+            const messagesArea = document.getElementById('messagesArea');
+            
+            // Remove existing typing indicator
+            const existing = messagesArea.querySelector('.typing-group');
+            if (existing) existing.remove();
+            
+            const typingGroup = document.createElement('div');
+            typingGroup.className = 'message-group typing-group received';
+            
+            const typingContainer = document.createElement('div');
+            typingContainer.className = 'typing-indicator';
+            typingContainer.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            
+            typingGroup.appendChild(typingContainer);
+            messagesArea.appendChild(typingGroup);
+            scrollToBottom();
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            console.log('[v0] Hiding typing indicator');
+            const messagesArea = document.getElementById('messagesArea');
+            const existing = messagesArea.querySelector('.typing-group');
+            if (existing) existing.remove();
+        }
+
         // Send message
         function sendMessage() {
             const input = document.getElementById('messageInput');
@@ -662,8 +713,16 @@
                 timestamp: new Date()
             };
 
+            console.log('[v0] Sending message:', messageData);
+
             // Send via socket
             socket.emit('send-message', messageData);
+
+            // Store in messages object
+            if (!messages[currentChat.id]) {
+                messages[currentChat.id] = [];
+            }
+            messages[currentChat.id].push(messageData);
 
             // Display message immediately
             displayMessage(messageData);
@@ -677,6 +736,10 @@
 
             // Update chat preview
             updateChatPreview(currentChat.id, message);
+
+            // Stop typing indicator
+            socket.emit('stop-typing', { chatId: currentChat.id });
+            hideTypingIndicator();
         }
 
         // Update chat preview

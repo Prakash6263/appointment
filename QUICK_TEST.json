@@ -1,0 +1,91 @@
+{
+  "title": "Quick Socket Chat Test - 5 Minutes",
+  "instructions": [
+    {
+      "step": 1,
+      "time": "30 seconds",
+      "title": "Start Server",
+      "action": "npm run dev",
+      "check": "Server running on port 5000"
+    },
+    {
+      "step": 2,
+      "time": "10 seconds",
+      "title": "Open Provider Chat",
+      "action": "Go to http://localhost:5000/provider-chat.html",
+      "check": "Chat interface loads"
+    },
+    {
+      "step": 3,
+      "time": "10 seconds",
+      "title": "Open User Chat",
+      "action": "In new tab: http://localhost:5000/user-chat.html",
+      "check": "User chat interface loads"
+    },
+    {
+      "step": 4,
+      "time": "20 seconds",
+      "title": "Select Same Chat",
+      "action": "In both tabs, click 'Speedy Chow' / 'provider_001' chat",
+      "check": "Both show same chat window"
+    },
+    {
+      "step": 5,
+      "time": "30 seconds",
+      "title": "Send Message",
+      "action": "Provider tab: Type 'Hello' and press Enter",
+      "check": "Message appears in Provider (right, cyan) AND User tab (left, gray) INSTANTLY"
+    },
+    {
+      "step": 6,
+      "time": "30 seconds",
+      "title": "Reply Message",
+      "action": "User tab: Type 'Hi there' and press Enter",
+      "check": "Message appears in User tab (right, cyan) AND Provider tab (left, gray) INSTANTLY"
+    },
+    {
+      "step": 7,
+      "time": "20 seconds",
+      "title": "Test Typing Indicator",
+      "action": "Provider tab: Start typing but DON'T send",
+      "check": "User tab shows animated 3 dots in messages area"
+    },
+    {
+      "step": 8,
+      "time": "20 seconds",
+      "title": "Verify Database",
+      "action": "Check MongoDB Chat collection",
+      "check": "All messages saved with correct chatId, senderId, message text"
+    }
+  ],
+  "expected_results": {
+    "test_passed": "Messages appear instantly in both windows with correct styling and typing indicator works",
+    "test_failed": [
+      "Check browser console (F12) for error messages",
+      "Look for '[v0]' debug logs",
+      "Verify socket is connected: '[Socket] Connected' log",
+      "Ensure both tabs are on same chat"
+    ]
+  },
+  "console_logs_to_see": [
+    "[Provider Socket] Connected: <socketId>",
+    "[User Socket] Connected: <socketId>",
+    "[v0] Sending message: {...}",
+    "[v0] Total messages for provider_001: 1",
+    "[v0] Displaying message for current chat: provider_001",
+    "[v0] Showing typing indicator for: <userName>"
+  ],
+  "if_messages_dont_show": [
+    "Check console for errors (red text in F12)",
+    "Verify chatId matches - should see 'provider_001' in logs",
+    "Make sure you selected the same chat in both windows",
+    "Check network tab - is 'send-message' event being sent?",
+    "Try refreshing both pages and selecting chat again"
+  ],
+  "if_typing_indicator_not_showing": [
+    "Make sure other window is focused on same chat",
+    "Check console for 'Showing typing indicator' log",
+    "Type slowly to ensure input event fires",
+    "Wait max 3 seconds - indicator auto-hides"
+  ]
+}

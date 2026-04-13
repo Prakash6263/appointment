@@ -2,6 +2,17 @@ const socketIO = require('socket.io');
 const socketManager = require('./services/socketManager');
 const Chat = require('./models/Chat');
 
+// Helper function to generate chat room ID
+function generateChatRoomId(userId1, userId2) {
+  return [userId1, userId2].sort().join('_');
+}
+
+// Helper function to check if user is member of chat room
+function isMemberOfChatRoom(userId, chatRoomId) {
+  const [user1, user2] = chatRoomId.split('_');
+  return userId === user1 || userId === user2;
+}
+
 /**
  * Initialize Socket.io with JWT authentication
  */
@@ -93,7 +104,7 @@ function initializeSocket(server) {
         }
 
         // Generate consistent room ID
-        const chatRoomId = socketManager.constructor.generateChatRoomId(socket.userId, recipientId);
+        const chatRoomId = generateChatRoomId(socket.userId, recipientId);
         
         // Join the socket to the room
         socket.join(chatRoomId);
@@ -109,7 +120,7 @@ function initializeSocket(server) {
         io.to(chatRoomId).emit('chat-active', {
           chatRoomId,
           activeMembers: socketManager.getAllActiveUsers().filter(u => 
-            socketManager.constructor.isMemberOfChatRoom(u.userId, chatRoomId) && socketManager.isUserOnline(u.userId)
+            isMemberOfChatRoom(u.userId, chatRoomId) && socketManager.isUserOnline(u.userId)
           )
         });
 
@@ -133,9 +144,9 @@ function initializeSocket(server) {
         }
 
         // Verify user is in a valid chat room with recipient
-        const chatRoomId = socketManager.constructor.generateChatRoomId(socket.userId, recipientId);
+        const chatRoomId = generateChatRoomId(socket.userId, recipientId);
         
-        if (!socketManager.constructor.isMemberOfChatRoom(socket.userId, chatRoomId)) {
+        if (!isMemberOfChatRoom(socket.userId, chatRoomId)) {
           console.log('[Socket] User not authorized for this chat');
           socket.emit('error', { message: 'Not authorized for this chat' });
           return;

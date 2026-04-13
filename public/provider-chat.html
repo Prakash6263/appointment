@@ -498,7 +498,13 @@
 
         // Initialize Socket.io
         function initSocket() {
+            // Get JWT token from localStorage or sessionStorage
+            const token = localStorage.getItem('jwt_token') || 'test_provider_token_12345';
+            
             socket = io(PROVIDER_CONFIG.socketUrl, {
+                auth: {
+                    token: token
+                },
                 reconnection: true,
                 reconnectionDelay: 1000,
                 reconnectionDelayMax: 5000,
@@ -510,7 +516,7 @@
                 console.log('[Provider Socket] Connected:', socket.id);
                 
                 // Notify server that provider joined
-                socket.emit('user-join', {
+                socket.emit('join-chat', {
                     userId: PROVIDER_CONFIG.userId,
                     userType: PROVIDER_CONFIG.userType,
                     userName: PROVIDER_CONFIG.userName

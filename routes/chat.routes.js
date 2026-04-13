@@ -1,20 +1,19 @@
 const express = require("express");
 const Chat = require("../models/Chat");
 const ChatService = require("../services/chatService");
-const socketManager = require("../services/socketManager");
-const authMiddleware = require("../middleware/auth");
+const { verifyToken } = require("../middleware/auth");
 
 const router = express.Router();
 
 // Get all messages for a chat (authenticated)
-router.get("/messages/:chatId", authMiddleware, async (req, res) => {
+router.get("/messages/:chatId", verifyToken, async (req, res) => {
   try {
     const { chatId } = req.params;
     const { limit = 50, skip = 0 } = req.query;
     const userId = req.userId;
 
-    // Validate user belongs to this chat
-    if (!socketManager.constructor.isMemberOfChatRoom(userId, chatId)) {
+    // Validate user belongs to this chat (basic check - user must be in chatId)
+    if (!chatId.includes(userId)) {
       return res.status(403).json({
         success: false,
         message: "You don't have access to this chat"
@@ -45,7 +44,7 @@ router.get("/messages/:chatId", authMiddleware, async (req, res) => {
 });
 
 // Get chat history between two users (authenticated)
-router.get("/history/:userId1/:userId2", authMiddleware, async (req, res) => {
+router.get("/history/:userId1/:userId2", verifyToken, async (req, res) => {
   try {
     const { userId1, userId2 } = req.params;
     const userId = req.userId;
@@ -75,7 +74,7 @@ router.get("/history/:userId1/:userId2", authMiddleware, async (req, res) => {
 });
 
 // Mark message as read (authenticated - only receiver)
-router.put("/messages/:messageId/read", authMiddleware, async (req, res) => {
+router.put("/messages/:messageId/read", verifyToken, async (req, res) => {
   try {
     const { messageId } = req.params;
     const userId = req.userId;
@@ -97,7 +96,7 @@ router.put("/messages/:messageId/read", authMiddleware, async (req, res) => {
 });
 
 // Delete a message (authenticated - only sender)
-router.delete("/messages/:messageId", authMiddleware, async (req, res) => {
+router.delete("/messages/:messageId", verifyToken, async (req, res) => {
   try {
     const { messageId } = req.params;
     const userId = req.userId;
@@ -118,7 +117,7 @@ router.delete("/messages/:messageId", authMiddleware, async (req, res) => {
 });
 
 // Get unread message count for a user (authenticated)
-router.get("/unread/:userId", authMiddleware, async (req, res) => {
+router.get("/unread/:userId", verifyToken, async (req, res) => {
   try {
     const { userId } = req.params;
     const currentUserId = req.userId;
@@ -147,7 +146,7 @@ router.get("/unread/:userId", authMiddleware, async (req, res) => {
 });
 
 // Mark entire chat as read (authenticated)
-router.put("/chat/:chatId/read-all", authMiddleware, async (req, res) => {
+router.put("/chat/:chatId/read-all", verifyToken, async (req, res) => {
   try {
     const { chatId } = req.params;
     const userId = req.userId;
@@ -169,7 +168,7 @@ router.put("/chat/:chatId/read-all", authMiddleware, async (req, res) => {
 });
 
 // Get count of unique providers for a customer (analytics)
-router.get("/stats/customer/providers-count", authMiddleware, async (req, res) => {
+router.get("/stats/customer/providers-count", verifyToken, async (req, res) => {
   try {
     const userId = req.userId;
 
@@ -190,7 +189,7 @@ router.get("/stats/customer/providers-count", authMiddleware, async (req, res) =
 });
 
 // Get count of unique customers for a provider (analytics)
-router.get("/stats/provider/customers-count", authMiddleware, async (req, res) => {
+router.get("/stats/provider/customers-count", verifyToken, async (req, res) => {
   try {
     const userId = req.userId;
 

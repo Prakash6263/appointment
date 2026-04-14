@@ -20,7 +20,10 @@ const bookingSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-
+ serviceId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Service"
+  },
     subServiceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "SubService",

@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Booking = require("../models/Booking");
 const Provider = require("../models/Provider");
 const bcrypt = require("bcrypt");
@@ -5,21 +6,19 @@ const bcrypt = require("bcrypt");
 const SALT_ROUNDS = 10;
 
 exports.getAllBookings = async (req, res) => {
-  // console.log("getAllBookings",req.userId)
+ 
   try {
     const providerId = req.userId;
-// console.log("req.user:", req);
+   // ✅ FIX
+    const provider = await Provider.findOne({ userId: providerId });
 
-    // ✅ provider find karo
-    const provider = await Provider.findById(providerId);
     if (!provider) {
       return res.status(404).json({
         success: false,
         message: "Provider not found",
       });
     }
-// console.log("provider", provider);
-    // ✅ partnerId se bookings fetch
+
     const bookings = await Booking.find({
       partnerId: provider.partnerId,
     })
@@ -41,11 +40,16 @@ exports.getAllBookings = async (req, res) => {
   }
 };
 
+
 exports.getTodayBookings = async (req, res) => {
   try {
     const providerId = req.userId;
 
-    const provider = await Provider.findById(providerId);
+    // ✅ FIX 1: userId se provider find karo
+    const provider = await Provider.findOne({
+      userId: new mongoose.Types.ObjectId(providerId),
+    });
+
     if (!provider) {
       return res.status(404).json({
         success: false,
@@ -53,25 +57,26 @@ exports.getTodayBookings = async (req, res) => {
       });
     }
 
-    // ✅ UTC me aaj ka range
+    // ✅ UTC range (correct)
     const startOfDay = new Date();
     startOfDay.setUTCHours(0, 0, 0, 0);
 
     const endOfDay = new Date();
     endOfDay.setUTCHours(23, 59, 59, 999);
 
-    // ✅ bookingDate use karo (correct field)
-    const bookings = await Booking.find({
-      partnerId: provider.partnerId,
-      bookingDate: {
-        $gte: startOfDay,
-        $lte: endOfDay,
-      },
-    })
-      .populate("serviceId", "name")
-      .populate("providerId", "name")
-      .populate("userId", "name email")
-      .sort({ bookingDate: 1 });
+    // ✅ FIX 2: populate safe (गलत field error avoid)
+const bookings = await Booking.find({
+  partnerId: provider.partnerId,
+  bookingDate: {
+    $gte: startOfDay,
+    $lte: endOfDay,
+  },
+})
+  .populate("serviceId", "name price")     // service
+  .populate("providerId", "name")          // provider
+  .populate("userId", "username email")    // ✅ FIX HERE
+  .populate("subServiceId", "name")        // optional
+  .sort({ bookingDate: 1 });
 
     res.json({
       success: true,
@@ -80,9 +85,10 @@ exports.getTodayBookings = async (req, res) => {
     });
   } catch (error) {
     console.error("Today bookings error:", error);
+
     res.status(500).json({
       success: false,
-      message: "Failed to fetch today bookings",
+      message: error.message, // 🔥 actual error show karo
     });
   }
 };
@@ -92,9 +98,12 @@ exports.getBookingById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // ✅ Find booking
     const booking = await Booking.findById(id)
-      .populate("serviceId", "name price")
+      .populate({
+        path: "serviceId",
+        select: "name price",
+        strictPopulate: false, // 🔥 important
+      })
       .populate("providerId", "name")
       .populate("userId", "name email");
 
@@ -114,10 +123,9 @@ exports.getBookingById = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to fetch booking",
+      message: error.message, // 🔥 real error
     });
   }
 };
-
 
 

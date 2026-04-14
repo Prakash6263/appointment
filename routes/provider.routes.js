@@ -51,5 +51,6 @@ router.put(
   partnerProviderController.updateProvider
 );
 
+router.patch("/booking/:bookingId/status", bookingController.updateBookingStatus);
 
 module.exports = router; 

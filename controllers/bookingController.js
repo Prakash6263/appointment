@@ -1,8 +1,7 @@
-const { default: mongoose } = require("mongoose");
 const Booking = require("../models/Booking");
 const Provider = require("../models/Provider");
 const limitService = require("../services/limitService");
-
+const mongoose = require("mongoose");
 /* =====================================================
    CUSTOMER SIDE API
    User service book karta hai
@@ -438,7 +437,7 @@ exports.getBookingById = async (req, res) => {
       .populate("userId")
       .populate("partnerId")
       .populate("providerId")
-      .populate("serviceId");
+      .populate("subServiceId", "name") 
 
     if (!booking) {
       return res.status(404).json({
@@ -452,6 +451,80 @@ exports.getBookingById = async (req, res) => {
       data: booking,
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+exports.updateBookingStatus = async (req, res) => {
+  console.log("api call");
+
+  try {
+    const providerUserId = req.userId;
+    const { bookingId } = req.params;
+    const { status } = req.body;
+
+    const allowedStatus = ["CONFIRMED", "CANCELLED", "COMPLETED"];
+
+    if (!allowedStatus.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status value",
+      });
+    }
+
+    const provider = await Provider.findOne({
+      userId: new mongoose.Types.ObjectId(providerUserId),
+    });
+
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found",
+      });
+    }
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    if (booking.partnerId.toString() !== provider.partnerId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this booking",
+      });
+    }
+
+    if (["CANCELLED", "COMPLETED"].includes(booking.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Booking already ${booking.status}`,
+      });
+    }
+
+    // 🔥 FIX HERE (NO save)
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      bookingId,
+      { status },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: `Booking ${status} successfully`,
+      data: updatedBooking,
+    });
+  } catch (error) {
+    console.error("Update booking status error:", error);
+
     res.status(500).json({
       success: false,
       message: error.message,
